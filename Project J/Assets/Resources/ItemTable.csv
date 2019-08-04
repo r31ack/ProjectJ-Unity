@@ -1,0 +1,9 @@
+﻿string,string,string,int,int,int
+imageName,name,explain,itemType,value,buyGold
+W_Sword001,기본검,흔한 검이다.,0,10,100
+W_Sword002,기본장검,흔한 장검이다.,0,15,300
+A_Armour01,동갑주,흔한 갑옷이다.,1,5,50
+A_Armour02,은갑주,세련된 갑옷이다.,1,8,500
+A_Armour03,황금갑주,빛나는 갑옷이다.,1,10,1500
+P_Red01,하급포션,하급 물약이다.,2,20,10
+P_Red02,중급포션,중급 물약이다.,2,30,30

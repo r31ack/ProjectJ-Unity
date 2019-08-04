@@ -1,0 +1,9 @@
+﻿int,string,string,string
+Index,ItemType,ItemName,Explain
+0,무기,W_Sword001,흔한 무기이다.
+1,무기,W_Sword002,흔한 무기이다.
+2,방어구,A_Armour01,흔한 갑옷이다.
+3,방어구,A_Armour02,흔한 갑옷이다.
+4,방어구,A_Armour03,흔한 갑옷이다.
+5,물약,P_Red01,흔한 물약이다.
+6,물약,P_Red02,흔한 물약이다.

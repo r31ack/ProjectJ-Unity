@@ -1,0 +1,9 @@
+﻿string,int,int
+imageName,itemType,buyGold
+W_Sword001,0,100
+W_Sword002,0,300
+A_Armour01,1,50
+A_Armour02,1,500
+A_Armour03,1,1500
+P_Red01,2,10
+P_Red02,2,30
