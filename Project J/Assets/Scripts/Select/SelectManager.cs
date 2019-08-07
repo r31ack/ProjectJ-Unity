@@ -43,16 +43,14 @@ public class SelectManager : MonoBehaviour
             if (characterType == CHARACTER_TYPE.UNITY)
             {
                 characterName = "< UNITY-CHAN >";                            // 캐릭터명
-                GameObject character = (GameObject)Instantiate(Resources.Load("Prefabs/UnityChan"), new Vector3(-1.2f + 0.85f * slotIndex, -0.4f, -0.2f), Quaternion.AngleAxis(180.0f, new Vector3(0, 1, 0)));   // 180도 회전 생성
+                GameObject character = (GameObject)Instantiate(Resources.Load("Prefabs/UnityChanNormal"), new Vector3(-1.2f + 0.85f * slotIndex, -0.4f, -0.2f), Quaternion.AngleAxis(180.0f, new Vector3(0, 1, 0)));   // 180도 회전 생성
                 character.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f); // 스케일 0.6으로 변경
-                character.GetComponent<UnityChanOperation>().enabled = false;   // 조작 스크립트 비활성화
             }
             else if (characterType == CHARACTER_TYPE.AKAZA)
             {
                 characterName = "< AKAZA >";                                 // 캐릭터명
-                GameObject character = (GameObject)Instantiate(Resources.Load("Prefabs/Akaza"), new Vector3(-1.2f + 0.85f * slotIndex, -0.4f, -0.2f), Quaternion.AngleAxis(180.0f, new Vector3(0, 1, 0))); // 180도 회전 생성
+                GameObject character = (GameObject)Instantiate(Resources.Load("Prefabs/AkazaNormal"), new Vector3(-1.2f + 0.85f * slotIndex, -0.4f, -0.2f), Quaternion.AngleAxis(180.0f, new Vector3(0, 1, 0))); // 180도 회전 생성
                 character.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);  // 스케일 0.6으로 변경
-                character.GetComponent<UnityChanOperation>().enabled = false;  // 조작 스크립트 비활성화
             }
             m_characterLabel[slotIndex].text = characterName + "\n닉네임 : " + userName;
         }
@@ -71,7 +69,7 @@ public class SelectManager : MonoBehaviour
         int selectIndexSlot = GameManager.instance.m_iCreateCharacterIndex;
         if (selectIndexSlot != -1)
         {
-            GameManager.instance.m_strSelectUserName = m_dicCreateInfo[selectIndexSlot].m_strUserName;  // 로비창에 넘어가기위한 캐릭터 정보 최종설정
+            GameManager.instance.m_iSelectCharacterIndex = selectIndexSlot;  // 로비창에 넘어가기위한 캐릭터 정보 최종설정
             SceneManager.LoadScene("LobbyScene");                                                       // 로비씬을 불러옴
         }
     }

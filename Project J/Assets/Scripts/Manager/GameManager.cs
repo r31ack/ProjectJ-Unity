@@ -21,7 +21,7 @@ public class GameManager : MonoSingleton<GameManager>
     private Canvas m_exitWindow;                   // 게임 종료 확인 창
     private bool m_bExitWindowFlag = false;        // 게임 종료 확인 창 활성화 여부
     public int m_iCreateCharacterIndex = -1;       // 캐릭터 선택창에 내가 누른 버튼
-    public string m_strSelectUserName = null;      // 로비 입장전 최종적으로 내가 선택한 닉네임
+    public int m_iSelectCharacterIndex = -1;       // 로비에 입장시에 내가 선택한 캐릭터 인덱스
 
     // Start is called before the first frame update
     void Start()

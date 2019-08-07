@@ -10,10 +10,24 @@ public class CreateInfo      // 생성한 캐릭터 정보, key : 슬롯 인덱�
     public CHARACTER_TYPE m_eCharacterType;  // 캐릭터 종류
 }
 
-public class ShopItemInfo    // 상점에 있는 아이템 정보, key : 아이템이미지이름(string)
+public class DynamicCharacterInfo           // 동적으로 변하는 캐릭터 정보
 {
-    public ITEM_TYPE m_eType; // 아이템 종류
-    public int m_iBuyGold;   // 구매 가격
+    public string m_strUserName;            // 유저 닉네임
+    public CHARACTER_TYPE m_eCharacterType; // 캐릭터 타입
+    public int m_iLevel;                    // 레벨
+    public int m_iExp;                      // 경험치
+    public int m_iJam;                      // 보석
+    public int m_iGold;                     // 골드
+
+    public void setDynamicCharacterInfo(string userName, int characterType, int level, int exp, int jam, int gold)  // 매게변수 세팅
+    {
+        m_strUserName = userName;
+        m_eCharacterType = (CHARACTER_TYPE)characterType;
+        m_iLevel = level;
+        m_iExp = exp;
+        m_iJam = jam;
+        m_iGold = gold;
+    }
 }
 
 public class CreateCharacterTable           // 생성한 캐릭터 정보를 담는 테이블
@@ -21,16 +35,6 @@ public class CreateCharacterTable           // 생성한 캐릭터 정보를 담
     public int Index { get; set; }          // 테이블의 고유번호
     public int CharacterIndex { get; set; } // 캐릭터 구분번호
     public string UserName { get; set; }    // 유저의 닉네임
-}
-
-public class ItemInfo             // 아이템의 고유 정보
-{
-    public string m_strImageName; // 아이템 이미지이름 (Key)
-    public string m_strName;      // 아이템 이름
-    public string m_strExplain;   // 아이템 설명
-    public ITEM_TYPE m_eType;      // 아이템 종류
-    public int m_iValue;          // 아이템 타입별 수치 (무기:공격력, 방어구:방어력, 물약:회복력)
-    public int m_iBuyGold;        // 구매 가격
 }
 
 public class InventoryInfo        // 인벤토리에 있는 아이템 정보
@@ -54,9 +58,12 @@ public class DataManager : MonoSingleton<DataManager>
 {
     private Dictionary<int, CreateCharacterTable> m_dicCreateCharacterTable = new Dictionary<int, CreateCharacterTable>();  // 생성한 캐릭터 정보의 테이블 딕셔너리
     private Dictionary<int, CreateInfo> m_dicCreateInfo = new Dictionary<int, CreateInfo>();                    // 생성 캐릭터 정보
-    private Dictionary<string, ItemInfo> m_dicItemInfo = new Dictionary<string, ItemInfo>();                    // 아이템 고유 정보
+
+    private DynamicCharacterInfo m_characterInfo = new DynamicCharacterInfo();                                    // 캐릭터 정보
+
+
     private Dictionary<string, InventoryInfo> m_dicInventoryInfo = new Dictionary<string, InventoryInfo>();     // 인벤토리 아이템 정보
-    private Dictionary<string, ShopItemInfo> m_dicShopItemInfo = new Dictionary<string, ShopItemInfo>();        // 상점 아이템 정보
+
 
     private bool m_bCreateInfoLoadState = false;                                                                // 생성 캐릭터 정보를 로드 했었는지 체크
 
@@ -70,10 +77,29 @@ public class DataManager : MonoSingleton<DataManager>
     {
     }
 
-    public Dictionary<string, InventoryInfo> loadInventoryInfo()                    // 외부데이터에서 인벤토리 정보를 불러온 후 딕셔너리에 담아 반환
+    public DynamicCharacterInfo loadDynamicCharacterInfo(int characterIndex)       // Json데이터에서 유저 캐릭터 정보를 불러온 후 클래스 변수에 담아 반환
     {
-       Debug.Log("JSON 파일 인벤토리 정보 불러오기");
-       TextAsset inventoryInfoText = Resources.Load<TextAsset>("JsonDataInfo");     // 텍스트로 Json파일을 불러 옴
+        Debug.Log("JSON 파일 캐릭터 정보 불러오기");
+        TextAsset userInfoText = Resources.Load<TextAsset>("Data/CharacterIndex" + characterIndex);     // 텍스트 에셋으로 Json파일을 불러 옴
+
+        if (userInfoText != null)                                                // 텍스트가 존재한다면
+        {
+            JSONNode nodeData = JSON.Parse(userInfoText.text) as JSONNode;       // 테이블 형태로 파싱
+            if (nodeData != null)                                                // 노드 데이터가 존재한다면
+            {
+                JSONObject jsonObject = nodeData["CharacterInfo"] as JSONObject;      // 유저 정보를 받음 (유저 정보는 한 라인 밖에 없음)
+                m_characterInfo.setDynamicCharacterInfo(jsonObject["userName"], jsonObject["characterType"], jsonObject["level"], jsonObject["exp"], jsonObject["jam"], jsonObject["gold"]);
+            }
+        }
+        Debug.Log("JSON 파일 캐릭터 정보 불러오기 완료");
+        return m_characterInfo;
+    }
+
+    public Dictionary<string, InventoryInfo> loadInventoryInfo(int characterIndex)    // 외부데이터에서 인벤토리 정보를 불러온 후 딕셔너리에 담아 반환
+    {
+       m_dicInventoryInfo.Clear();                                                    // 딕셔너리 정보를 비우고 시작
+       Debug.Log("JSON 파일 인벤토리 정보 불러오기 시작");
+       TextAsset inventoryInfoText = Resources.Load<TextAsset>("Data/CharacterIndex" + characterIndex);     // 텍스트로 Json파일을 불러 옴
 
        if(inventoryInfoText != null)                                                // 텍스트가 존재한다면
        {
@@ -88,29 +114,52 @@ public class DataManager : MonoSingleton<DataManager>
                 }
             }
        }
+        Debug.Log("JSON 파일 인벤토리 정보 불러오기 완료");
         return m_dicInventoryInfo;
     }
 
-    public Dictionary<string, ItemInfo> loadItemInfo()
+    public void saveDefaultUserInfo(int characterIndex, string userName, CHARACTER_TYPE characterType) // 캐릭터를 처음 생성한 경우 디폴트 정보를 저장한다.
     {
-        TextAsset text = Resources.Load<TextAsset>("ItemTable");        // 리소스 로드를 통해 테이블을 로드한다.
-        string content = text.text;                                     // content안에는 1줄로 데이터가 쭉 나열되어 있다.
-        string[] line = content.Split('\n');                            // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
+        m_characterInfo.m_strUserName = userName;              
+        m_characterInfo.m_eCharacterType = characterType;
+        m_characterInfo.m_iLevel = 1;
+        m_characterInfo.m_iExp = 0;
+        m_characterInfo.m_iJam = 0;
+        m_characterInfo.m_iGold = 1000;                        // 디폴트 세팅 후에
+        m_dicInventoryInfo.Add("W_Sword001", new InventoryInfo("W_Sword001",0, 0));   // 기본 제공 무기
+        m_dicInventoryInfo.Add("A_Armour01", new InventoryInfo("W_Sword001", 0, 1));  // 기본 제공 방어구
+        m_dicInventoryInfo.Add("P_Red01", new InventoryInfo("W_Sword001", 0, 2));  // 기본 제공 포션
+        saveUserInfo(characterIndex);                          // Json으로 내보낸다.
+    }
 
-        for (int i = 2; i < line.Length - 1; i++)      // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+    public void saveUserInfo(int characterIndex)  // 유저 개인의 정보를 모두 저장한다.
+    {
+        Debug.Log("JSON 파일 캐릭터 정보 저장하기 시작");
+        JSONNode userInfo = new JSONObject();        // 유저 정보 최상단 노드를 하나 생성한다.                                                계층 1단계 (userInfo)
+
+        JSONNode characterInfo = new JSONObject();          // key 노드를 하나 생성함 (내용 : UserInfo)                                       계층 2단계 (characterInfo)
+         
+        characterInfo.Add("userName", m_characterInfo.m_strUserName);              // 유저 닉네임 삽입
+        characterInfo.Add("characterType", (int)m_characterInfo.m_eCharacterType); // 캐릭터 타입 삽입 enum->int 형변환
+        characterInfo.Add("level", m_characterInfo.m_iLevel);                      // 레벨 삽입
+        characterInfo.Add("exp", m_characterInfo.m_iExp);                          // 경험치 삽입
+        characterInfo.Add("jam", m_characterInfo.m_iJam);                          // 보석 갯수 삽입
+        characterInfo.Add("gold", m_characterInfo.m_iGold);                        // 골드 수 삽입
+
+        JSONNode inventoryInfo = new JSONObject();             // key 노드를 하나 생성함 (내용 : InventoryInfo)                               계층 2단계 (inventoryInfo)                                      
+
+        foreach (KeyValuePair<string, InventoryInfo> iterator in m_dicInventoryInfo)  // 테이블을 반복자를 통해 인벤토리 정보를 순회하면서
         {
-            string[] column = line[i].Split(',');                     // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
-            ItemInfo table = new ItemInfo();                          // SCV순서와 구조체 데이터 형식이 일치하여야 함
-            int index = 0;                                            // 0번째 열부터 시작
-            table.m_strImageName = column[index++].Replace("\r", ""); // 저장 후 인덱스를 계속 증가시켜 읽는다.
-            table.m_strName = column[index++].Replace("\r", ""); // 0
-            table.m_strExplain = column[index++].Replace("\r", ""); // 0
-            table.m_eType = (ITEM_TYPE)int.Parse(column[index++]);
-            table.m_iValue = int.Parse(column[index++]);
-            table.m_iBuyGold = int.Parse(column[index++]);     
-            m_dicItemInfo.Add(table.m_strImageName, table);          // 딕셔너리에 테이블 생성정보 삽입
+            JSONNode itemName = new JSONObject();                              // 아이템 이름을 key로 가지는 value Node생성                   계층 3단계 (itemName)
+            itemName.Add("row", m_dicInventoryInfo[iterator.Key].m_iSlotRow);  // row 정보 대입
+            itemName.Add("col", m_dicInventoryInfo[iterator.Key].m_iSlotCol);  // row 정보 대입
+            inventoryInfo.Add(iterator.Key, itemName);                    // 아이템 명, 아이템 슬롯 위치정보 대입
         }
-        return m_dicItemInfo;
+        userInfo.Add("CharacterInfo",characterInfo);    // 최상위 부모에게 조립1
+        userInfo.Add("InventoryInfo",inventoryInfo);    // 최상위 부모에게 조립2
+
+        File.WriteAllText(Application.dataPath + "/Resources/Data/CharacterIndex"+characterIndex+".json", userInfo.ToString());    // 데이터 저장
+        Debug.Log("JSON 파일 Index : " + characterIndex + " 캐릭터 정보 저장하기 완료");
     }
 
     public void saveInventoryTable()
@@ -178,26 +227,7 @@ public class DataManager : MonoSingleton<DataManager>
         sw.Close();
     }
 
-    public Dictionary<string, ShopItemInfo> loadShopItemInfo()
-    {
-        Debug.Log("CSV 파일 상점 판매 아이템 정보 불러오기");
-        TextAsset text = Resources.Load<TextAsset>("Data/ShopItemInfo");  // 리소스 로드를 통해 테이블을 로드한다.
-        string content = text.text;                                      // content안에는 1줄로 데이터가 쭉 나열되어 있다.
-        string[] line = content.Split('\n');                             // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
-        for (int i = 2; i < line.Length - 1; i++)                        // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
-        {
-            string[] column = line[i].Split(',');                    // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
-            ShopItemInfo table = new ShopItemInfo();                     // SCV순서와 구조체 데이터 형식이 일치하여야 함
-            string key = null;                                       // key값이 될 문자열의 닉네임 보관장소
-            int index = 0;                                           // 0번째 열부터 시작
 
-            key = column[index++].Replace("\r", "");
-            table.m_eType = (ITEM_TYPE)int.Parse(column[index++]);
-            table.m_iBuyGold = int.Parse(column[index++]);
-            m_dicShopItemInfo.Add(key, table);
-        }
-        return m_dicShopItemInfo;
-    }
 }
 
 

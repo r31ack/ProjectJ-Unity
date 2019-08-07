@@ -163,7 +163,7 @@ MonoBehaviour:
     width: 434
     height: 610
     borderLeft: 0
-    borderRight: 0
+    borderRight: 90
     borderTop: 0
     borderBottom: 0
     paddingLeft: 0

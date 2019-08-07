@@ -1,0 +1,4 @@
+﻿int,int,int,int,int,int,int,int,int
+characterType,maxExp,maxExpUp,maxHp,maxHpUp,str,strUp,def,defUp
+0,100,10,120,11,30,8,10,2
+1,100,10,100,9,24,6,8,1

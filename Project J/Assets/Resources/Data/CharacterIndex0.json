@@ -1,0 +1,40 @@
+{
+	"CharacterInfo": {
+		"userName": "다이제쿠키",
+		"characterType": 0,
+		"level": 12,
+		"exp": 94,
+		"jam": 9800,
+		"gold": 32000
+	},
+	"InventoryInfo": {
+		"W_Sword001": {
+			"row": 0,
+			"col": 0
+		},
+		"W_Sword002": {
+			"row": 0,
+			"col": 1
+		},
+		"A_Armour01": {
+			"row": 0,
+			"col": 2
+		},
+		"A_Armour02": {
+			"row": 1,
+			"col": 0
+		},
+		"A_Armour03": {
+			"row": 1,
+			"col": 1
+		},
+		"P_Red01": {
+			"row": 1,
+			"col": 2
+		},
+		"P_Red02": {
+			"row": 2,
+			"col": 1
+		}
+	}
+}

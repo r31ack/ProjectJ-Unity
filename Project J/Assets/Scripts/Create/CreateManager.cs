@@ -18,6 +18,9 @@ public class CreateManager : MonoBehaviour
     private Text m_inputNameText;
     private CHARACTER_TYPE m_eCharacterType = CHARACTER_TYPE.NONE;
 
+    private GameObject m_createTimerCanvas;
+    private float m_fCreateTimer = -1.0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,11 +31,14 @@ public class CreateManager : MonoBehaviour
        m_inputNameWindow = transform.Find("InputNameCanvas").GetComponent<Canvas>();
        m_inputNameWindow.gameObject.SetActive(false);          // 종료 창 초기상태 false
        m_inputNameText = m_inputNameWindow.transform.Find("InputField/Text").GetComponent<Text>();
+
+       m_createTimerCanvas = transform.Find("CreateTimerCanvas").gameObject;
     }
 
     // Update is called once per frame
     void Update()
     {
+        createTimer();
     }
 
     public void Icon1()
@@ -81,10 +87,21 @@ public class CreateManager : MonoBehaviour
     public void InputNameFinish()          // 닉네임 입력 완료
     {
         DataManager.instance.addCreateInfo(m_eCharacterType, m_inputNameText.text);
-        SceneManager.LoadScene("SelectScene");
-        m_binputNamWindowFlag = false;                                    
+        DataManager.instance.saveDefaultUserInfo(GameManager.instance.m_iCreateCharacterIndex, m_inputNameText.text, m_eCharacterType);
+        m_binputNamWindowFlag = false;
         m_inputNameWindow.gameObject.SetActive(m_binputNamWindowFlag);
+        m_fCreateTimer = 2.0f;
+        m_createTimerCanvas.SetActive(true);
+    }
 
+    public void createTimer()
+    {
+        if (m_fCreateTimer > 0)
+        {
+            m_fCreateTimer -= Time.deltaTime;
+            if(m_fCreateTimer < 0)
+                SceneManager.LoadScene("SelectScene");
+        }
     }
 
     public void inputNameCancel()          // 닉네임 입력 취소

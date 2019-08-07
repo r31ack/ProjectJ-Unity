@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있는 스크립트
 {
@@ -10,10 +11,16 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
     public float m_fHlodTimer = 0.0f;
     public float m_fChargeTimer = 0.0f;
 
+    private ItemManager m_itemManagerScript;           // 아이템 매니저 스크립트
+    private ProfileUIManager m_profileUIManagerScript; // 프로필 UI 매니저 스크립트
+
     private void Awake()
     {
         m_fMaxHP = 100;
         m_fCurHP = m_fMaxHP;
+
+        m_itemManagerScript = GameObject.Find("ItemWindow").GetComponent<ItemManager>();
+        m_profileUIManagerScript = GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>();
     }
 
     void Start()
@@ -60,7 +67,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             m_animator.SetFloat("holdTimer", m_fHlodTimer);
         }
 
-        if (m_animator.GetBool("chargeAttack") == true)
+        if (m_animator.GetBool("chargeAttack") == true && (m_aniState.IsName("ChargeStart") == true || m_aniState.IsName("Charging") == true))
         {
             if (m_fChargeTimer > 3.0f)
             {
@@ -92,7 +99,8 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             m_aniTransition.IsName("HoldAttackEnd -> Idle") == true ||
             m_aniTransition.IsName("ChargeAttack1 -> Idle") == true ||
             m_aniTransition.IsName("ChargeAttack2 -> Idle") == true ||
-            m_aniTransition.IsName("ChargeAttack3 -> Idle") == true)
+            m_aniTransition.IsName("ChargeAttack3 -> Idle") == true ||
+            m_aniTransition.IsName("Recovery -> Idle") == true)
         {
             initAnimatorInfo();
         }
@@ -119,10 +127,11 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         m_animator.SetInteger("baseComboCount", 0); // 기본공격 콤보 횟수를 0으로 만듬
         m_animator.SetInteger("stateLevel", 0);     // 상태 레벨을 0으로 만듬
         m_animator.ResetTrigger("dashAttack");      // 대쉬공격 트리거 초기화
-        m_animator.SetFloat("roll", 0);             // 기본콤보 상태를 false로 만듬
         m_animator.SetBool("jump", false);          // 점프 상태 초기화
         m_animator.SetFloat("moveVelocity", 0.0f);  // 이동 속도 초기화
         m_animator.SetFloat("chargeTimer", 0.0f);
+        m_animator.SetBool("holdAttack", false);
+
     }
 
     void animationState() // 애니메이션 상태 도중 정보 처리 관련 함수
@@ -130,19 +139,19 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         roll();       // 구르는 상태 처리
         dashAttack(); // 대쉬공격 상태 처리 
 
-        if (m_aniState.IsName("Charge") == true && m_aniState.normalizedTime > 0.3f) // baseAttack1의 애니메이션이 40퍼 이상이면
+        if (m_aniState.IsName("Idle") == true || m_aniState.IsName("Move") == true) // baseAttack1의 애니메이션이 40퍼 이상이면
         {
 
         }
-        if (m_aniState.IsName("Charge") == true && m_aniState.normalizedTime > 0.4f) // baseAttack1의 애니메이션이 40퍼 이상이면
+        if (m_aniState.IsName("ChargeStart") == true)
         {
-
+            m_animator.SetFloat("roll", 0);             // 
         }
     }
 
     void roll() // 구르는 상태 처리
     {
-        if (m_aniState.IsName("Roll") == true && m_aniState.normalizedTime > 0.1f && m_aniState.normalizedTime < 0.7f)
+        if (m_aniState.IsName("Roll") == true && m_aniState.normalizedTime > 0.1f && m_aniState.normalizedTime < 0.5f)
         {
             m_animator.SetFloat("moveVelocity", 0.0f);
             float direction = m_animator.GetFloat("roll");
@@ -155,13 +164,26 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             else if (direction == 4)
                 transform.Translate(transform.forward * -20 * Time.deltaTime, Space.World);
         }
+        else if (m_aniState.IsName("Roll") == true && m_aniState.normalizedTime > 0.9f)
+        {
+            m_animator.SetInteger("stateLevel", 0);     // 상태 레벨을 0으로 만듬
+            m_animator.SetFloat("roll", 0);             // 
+        }
     }
 
     void dashAttack() // 대쉬공격 상태 처리
     {
-        if (m_aniState.IsName("DashAttack") == true && m_aniState.normalizedTime > 0.4f && m_aniState.normalizedTime < 0.5f)
+        if (m_aniState.IsName("DashAttack") == true && m_aniState.normalizedTime > 0.4f && m_aniState.normalizedTime < 0.55f)
         {
-            transform.Translate(transform.forward * 200 * Time.deltaTime, Space.World);
+            transform.Translate(transform.forward * 80 * Time.deltaTime, Space.World);
+        }
+        //else if ((m_aniState.IsName("DashAttack") == true || m_aniState.IsName("Recovery") == true) && m_aniState.normalizedTime > 0.55f && m_aniState.normalizedTime < 0.6f)
+        //{
+        //    transform.Translate(-transform.forward * 20 * Time.deltaTime, Space.World);
+        //}
+        if (m_aniTransition.IsName("DashAttack -> Recovery") == true)
+        {
+            transform.Translate(-transform.forward * 20 * Time.deltaTime, Space.World);
         }
     }
 
@@ -195,7 +217,12 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         else if (m_aniState.IsName("HoldAttack1") == true || m_aniState.IsName("HoldAttack2") == true)
         {
             m_fCurAttackDamage = 10.0f;
-            m_fAttackHoldTime = 1.0f;
+            m_fAttackHoldTime = 0.033f;
+        }
+        else if (m_aniState.IsName("HoldAttackEnd") == true)
+        {
+            m_fCurAttackDamage = 50.0f;
+            m_fAttackHoldTime = 0.5f;
         }
         else if (m_aniState.IsName("ChargeAttack1") == true || m_aniState.IsName("ChargeAttack2") == true || m_aniState.IsName("ChargeAttack3") == true)
         {
@@ -205,21 +232,22 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
 
             if (type == 0)
             {
-                swordWind.transform.Translate(new Vector3(5,2,0), Space.Self);
+                swordWind.transform.Translate(new Vector3(5, 2, 3), Space.Self);
                 swordWind.transform.Rotate(Vector3.forward, -2, Space.Self);
             }
             else if (type == 1)
             {
-                swordWind.transform.Translate(new Vector3(-5, 2, 0), Space.Self);
+                swordWind.transform.Translate(new Vector3(-5, 2, 3), Space.Self);
                 swordWind.transform.Rotate(Vector3.forward, 2, Space.Self);
             }
             else if (type == 2)
             {
+                swordWind.transform.Translate(new Vector3(0, 2, 3), Space.Self);
                 swordWind.transform.Rotate(Vector3.forward, 80, Space.Self);
             }
             swordWind.SetActive(true);
             m_fCurAttackDamage = 10.0f;
-            m_fAttackHoldTime = 1.0f;
+            m_fAttackHoldTime = 0.1f;
         }
     }
 
@@ -256,6 +284,23 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         {
             EnemyTestInfomation enemyScript = coll.GetComponentInParent<EnemyTestInfomation>();   // 적 스크립트를 받아와서
             enemyScript.attacted(m_fCurAttackDamage);         // 그 적은 내 현재 공격모션의 데미지를 부여함
+        }
+        if (coll.gameObject.tag == "Potal")                   // 충돌 대상이 포탈이면
+        {
+            SceneManager.LoadScene("Stage2Scene");
+        }
+        if (coll.gameObject.tag == "DropItem")                   // 충돌 대상이 아이템이면
+        {
+            DropItem dropItemScripte = coll.GetComponent<DropItem>();
+            m_itemManagerScript.putInventroyItem(dropItemScripte.getItenName()); // 인벤토리에 아이템을 넣음
+            ObjectPoolManager.Instance.PushToPool("DropItem", coll.gameObject);
+        }
+        if (coll.gameObject.tag == "DropGold")
+        {
+            DropGold dropGoldScripte = coll.GetComponent<DropGold>();
+            CharacterInfoManager.instance.m_characterInfo.m_iGold += coll.GetComponent<DropGold>().getGoldAmount();
+            m_profileUIManagerScript.changeGold();
+            ObjectPoolManager.Instance.PushToPool("DropGold", coll.gameObject);
         }
     }
 }

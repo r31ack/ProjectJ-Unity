@@ -5,6 +5,12 @@ using UnityEngine.AI;                                            // NavMesh를 �
 public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
 {
     private NavMeshAgent m_agent;
+    //private InGameUIManager m_ingameUIScript;         // UIManager 스크립트
+
+    void Awake()
+    {
+        //m_ingameUIScript = GameObject.Find("InGameUI").GetComponent<InGameUIManager>();
+    }
 
     void Start()
     {
@@ -16,8 +22,7 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
     {
         m_aniTransition = m_animator.GetAnimatorTransitionInfo(0);           // 현재 애니메이션 전환상태
         m_aniState = m_animator.GetCurrentAnimatorStateInfo(0);              // 현재 애니메이션 진행상태
-        //r = Input.GetAxis("Mouse X");
-
+                                                                             //r = Input.GetAxis("Mouse X");
         OperateInput();
     }
 
@@ -39,14 +44,15 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
             }
             if (stateLevel <= 2)
             {
-                dashAttack();
-                holdAttack();
                 chargeAttack();
+                holdAttack();
             }
-            if (stateLevel <= 3)
+            if (stateLevel == 4)
             {
-                roll();
+                dashAttack();
+                baseAttack();        // 기본공격
             }
+            roll();
         }
     }
 
@@ -118,7 +124,7 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
             if (baseComboCount == 0)   // 콤보횟수가 없으면
             {
                 m_animator.SetFloat("baseComboTimer", 1.0f);   // 다음 콤보 연결 유지가능 시간 1초 세팅
-                m_animator.SetInteger("stateLevel", 1);        // 상태 레벨 1로 세팅 
+                m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
                 m_animator.SetInteger("baseComboCount", 1);    // 콤보 횟수 1로 세팅
             }
             else if (baseComboCount == 1)   // 콤보횟수가 1이면
@@ -127,6 +133,7 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
                 {
                     m_animator.SetFloat("baseComboTimer", 1.0f);   // 다음 콤보 연결 유지가능 시간 1초 세팅
                     m_animator.SetInteger("baseComboCount", 2);
+                    m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
                     m_animator.SetTrigger("baseAttack2");   // 트리거 활성화
                 }
             }
@@ -136,6 +143,7 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
                 {
                     m_animator.SetFloat("baseComboTimer", 1.0f);   // 다음 콤보 연결 유지가능 시간 1초 세팅
                     m_animator.SetInteger("baseComboCount", 3);
+                    m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
                     m_animator.SetTrigger("baseAttack3");   // 트리거 활성화
                 }
             }
@@ -144,7 +152,7 @@ public class UnityChanOperation : Player   // 유니티짱 조작 스크립트
 
     void dashAttack()
     {
-        if (Input.GetMouseButtonDown(1) == true)         // 마우스 왼쪽 키를 눌럿으면
+        if (Input.GetKeyDown(KeyCode.P) == true)       
         {
             m_animator.SetTrigger("dashAttack");
             m_animator.SetInteger("stateLevel", 2);
