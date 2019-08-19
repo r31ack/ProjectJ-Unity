@@ -16,7 +16,7 @@ public class LoadManager : MonoBehaviour
 
     private void Start()
     {
-        loadState = SceneManager.LoadSceneAsync("Stage1Scene");
+        loadState = SceneManager.LoadSceneAsync("Stage1-1Scene");
         loadState.allowSceneActivation = false;
         percentBar = sprProgressBar.GetComponent<UIScrollBar>();
     }

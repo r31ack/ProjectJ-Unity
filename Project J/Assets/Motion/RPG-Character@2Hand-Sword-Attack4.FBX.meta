@@ -774,14 +774,14 @@ ModelImporter:
       curves: []
       events:
       - time: 0.36828357
-        functionName: attack
-        data: DashAttack
+        functionName: hit
+        data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.52397263
-        functionName: cameraControll
+        functionName: delay
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

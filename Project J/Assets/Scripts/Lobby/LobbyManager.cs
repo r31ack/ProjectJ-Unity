@@ -87,6 +87,6 @@ public class LobbyManager : MonoBehaviour
 
     public void enterDungeon()  // 던전 입장 함수
     {
-        SceneManager.LoadScene("LoadingScene");
+        SceneManager.LoadScene("SelectDungeonScene");
     }
 }

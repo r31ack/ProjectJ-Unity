@@ -12,7 +12,7 @@ public class TitleManager : MonoBehaviour
 
     public void startButtonClick()
     {
-        SceneManager.LoadScene("SelectScene");
+        SceneManager.LoadScene("SelectCharacterScene");
     }
 
     // Start is called before the first frame update

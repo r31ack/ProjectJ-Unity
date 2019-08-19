@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProfileUIManager : MonoBehaviour
+public class ProfileUIManager : Singleton<ProfileUIManager>
 {
     private UISprite m_characterMiniIcon;                // 캐릭터 미니 아이콘
     private UILabel m_UserNameText;                      // 유저 닉네임 텍스트
     private UILabel m_LevelText;                         // 레벨 
-    private UILabel m_expPercentText;                    // 경험치 퍼센트
+
+    private UISlider m_expPercdentSlider;               
     private UILabel m_jamCountText;                      // 보석량
     private UILabel m_goldCountText;                     // 골드량
     private AllCharacterInfo m_characterInfomation;   // 캐릭터 정보를 받아온다.
@@ -17,17 +18,24 @@ public class ProfileUIManager : MonoBehaviour
 
     private string m_strCharacterName;                   // 캐릭터명
 
+    // 텍스트 표기용 UI
+    private UIPanel m_explainPanel;         // 설명 관련 패널
+    private UILabel m_stateExplainLabel;       // 상태 표시 레이블
+
     void Awake()
     {
         m_characterMiniIcon = transform.Find("CharacterMiniIcon").GetComponent<UISprite>();         // UI연결
         m_UserNameText = transform.Find("UserNameText").GetComponent<UILabel>();
         m_LevelText = transform.Find("LevelText").GetComponent<UILabel>();
-        m_expPercentText= transform.Find("ExpPercenText").GetComponent<UILabel>();
+        m_expPercdentSlider = transform.Find("ExpPercentSlider").GetComponent<UISlider>();
         m_jamCountText= transform.Find("JamCountText").GetComponent<UILabel>();
         m_goldCountText= transform.Find("GoldCountText").GetComponent<UILabel>();
 
         m_infomationText = GameObject.Find("ItemWindow").transform.Find("InfomationUI/InfomationText").GetComponent<UILabel>();
         m_statusText = GameObject.Find("ItemWindow").transform.Find("InfomationUI/StatusPlusText").GetComponent<UILabel>();
+
+        m_explainPanel = GameObject.Find("ExplainPanel").GetComponent<UIPanel>();
+        m_stateExplainLabel = m_explainPanel.transform.Find("StateExplain").GetComponent<UILabel>();
     }
 
     void Start()
@@ -35,7 +43,7 @@ public class ProfileUIManager : MonoBehaviour
         m_characterInfomation = CharacterInfoManager.instance.m_characterInfo;   // 캐릭터 정보를 받아온다.
         m_UserNameText.text = m_characterInfomation.m_strUserName;                  // 유저 닉네임 표시
         m_LevelText.text = m_characterInfomation.m_iLevel.ToString();
-        m_expPercentText.text = (((float)m_characterInfomation.m_iCurExp / (float)m_characterInfomation.m_iMaxExp)*100.0f).ToString("N0");  // 소수점 제외
+        m_expPercdentSlider.value = ((float)m_characterInfomation.m_iCurExp / (float)m_characterInfomation.m_iMaxExp);
         m_jamCountText.text = m_characterInfomation.m_iJam.ToString();
         m_goldCountText.text = m_characterInfomation.m_iGold.ToString();
         
@@ -65,13 +73,30 @@ public class ProfileUIManager : MonoBehaviour
 
     public void changeStatus()
     {
+        m_LevelText.text = m_characterInfomation.m_iLevel.ToString();
         m_statusText.text = m_characterInfomation.m_iStr.ToString() + " (+" + m_characterInfomation.m_iWeaponStr.ToString() + ")\n\n" +
         m_characterInfomation.m_iDef.ToString() + " (+" + m_characterInfomation.m_iArmorDef.ToString() + ")";
+        m_expPercdentSlider.value = ((float)m_characterInfomation.m_iCurExp / (float)m_characterInfomation.m_iMaxExp);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void levelUp()
     {
-        
+        m_stateExplainLabel.gameObject.SetActive(true);
+        m_stateExplainLabel.text = "Level Up!";
+        m_stateExplainLabel.alpha = 1.0f;
+
+        if (IsInvoking("fadeOutText") == true)
+            CancelInvoke("fadeOutText");
+        InvokeRepeating("fadeOutText", 3.0f, 0.05f);
+    }
+
+    public void fadeOutText()
+    {
+        m_stateExplainLabel.alpha -= 0.05f;
+        if (m_stateExplainLabel.alpha <= 0.0f)
+        {
+            CancelInvoke("fadeOutText");
+            m_stateExplainLabel.gameObject.SetActive(false);
+        }
     }
 }

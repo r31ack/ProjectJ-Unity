@@ -773,10 +773,10 @@ ModelImporter:
       curves: []
       events:
       - time: 0.380398
-        functionName: attack
-        data: BaseAttack1
+        functionName: hit
+        data: 
         objectReferenceParameter: {instanceID: 0}
-        floatParameter: 2
+        floatParameter: 0
         intParameter: 0
         messageOptions: 0
       transformMask: []

@@ -30,6 +30,25 @@ public class DynamicCharacterInfo           // 동적으로 변하는 캐릭터 
     }
 }
 
+public class RankingInfo                    // 랭킹 정보 (key : 유저 닉네임)
+{
+    public string m_strUserName;
+    public CHARACTER_TYPE m_eCharacterType; // 캐릭터 타입
+    public int m_iScore;
+    public float m_fClearTime;
+
+    public RankingInfo()        // 기본 생성자
+    {
+    }
+    public RankingInfo(string userName, int characterType, int score, float clearTime)  // 매게변수 생성자
+    {
+        m_strUserName = userName;
+        m_eCharacterType = (CHARACTER_TYPE)characterType;
+        m_iScore = score;
+        m_fClearTime = clearTime;
+    }
+}
+
 public class CreateCharacterTable           // 생성한 캐릭터 정보를 담는 테이블
 {
     public int Index { get; set; }          // 테이블의 고유번호
@@ -56,16 +75,14 @@ public class InventoryInfo        // 인벤토리에 있는 아이템 정보
 
 public class DataManager : MonoSingleton<DataManager>
 {
-    private Dictionary<int, CreateCharacterTable> m_dicCreateCharacterTable = new Dictionary<int, CreateCharacterTable>();  // 생성한 캐릭터 정보의 테이블 딕셔너리
+    private Dictionary<int, CreateCharacterTable> m_dicCreateCharacterTable = new Dictionary<int, CreateCharacterTable>();  // 생성한 캐릭터 정보의 딕셔너리
     private Dictionary<int, CreateInfo> m_dicCreateInfo = new Dictionary<int, CreateInfo>();                    // 생성 캐릭터 정보
-
     private DynamicCharacterInfo m_characterInfo = new DynamicCharacterInfo();                                    // 캐릭터 정보
-
-
     private Dictionary<string, InventoryInfo> m_dicInventoryInfo = new Dictionary<string, InventoryInfo>();     // 인벤토리 아이템 정보
-
+    private Dictionary<string, RankingInfo> m_dicRankingInfo = new Dictionary<string, RankingInfo>();           // 유저명을 기반으로 랭킹 정보를 가지고 있는 딕셔너리
 
     private bool m_bCreateInfoLoadState = false;                                                                // 생성 캐릭터 정보를 로드 했었는지 체크
+    private bool m_bRankingLoadState = false;                                                                // 랭킹 정보를 로드 했었는지 체크
 
 
     // Start is called before the first frame update
@@ -93,6 +110,32 @@ public class DataManager : MonoSingleton<DataManager>
         }
         Debug.Log("JSON 파일 캐릭터 정보 불러오기 완료");
         return m_characterInfo;
+    }
+
+    public Dictionary<string, RankingInfo> loadRankingInfo()       // Json데이터에서 랭킹 정보를 불러온다.
+    {
+        if (m_bRankingLoadState == false)
+        {
+            Debug.Log("JSON 파일 랭킹 정보 불러오기");
+            TextAsset userInfoText = Resources.Load<TextAsset>("Data/RankingInfo");   // 텍스트 에셋으로 Json파일을 불러 옴
+
+            if (userInfoText != null)                                                // 텍스트가 존재한다면
+            {
+                JSONNode nodeData = JSON.Parse(userInfoText.text) as JSONNode;       // 테이블 형태로 파싱
+                if (nodeData != null)                                                // 노드 데이터가 존재한다면
+                {
+                    JSONNode dicNode = nodeData["RankingInfo"] as JSONObject;        // 랭킹 정보를 노드로 받음
+                    foreach (KeyValuePair<string, JSONNode> iterator in dicNode)     // 테이블을 반복자를 통해 라인별로 순회하면서
+                    {
+                        JSONObject dicObject = dicNode[iterator.Key] as JSONObject;     // key에 해당하는 오브젝트 정보를 받아옴
+                        m_dicRankingInfo.Add(iterator.Key, new RankingInfo(iterator.Key, dicObject["characterType"].AsInt, dicObject["score"].AsInt, dicObject["clearTime"].AsFloat)); // 키,행렬의 정보를 딕셔너리에 삽입
+                    }
+                }
+            }
+            m_bRankingLoadState = true;
+        }
+        Debug.Log("JSON 파일 랭킹 정보 불러오기 완료");
+        return m_dicRankingInfo;
     }
 
     public Dictionary<string, InventoryInfo> loadInventoryInfo(int characterIndex)    // 외부데이터에서 인벤토리 정보를 불러온 후 딕셔너리에 담아 반환
@@ -162,14 +205,6 @@ public class DataManager : MonoSingleton<DataManager>
         Debug.Log("JSON 파일 Index : " + characterIndex + " 캐릭터 정보 저장하기 완료");
     }
 
-    public void saveInventoryTable()
-    {
-        Debug.Log("JSON 파일형태로 저장 시작");
-
-        //JsonData Inventory = JsonMapper.ToJson(m_arrLstInventoryInfo);
-        //File.WriteAllText(Application.dataPath + "/Resources/Table/InventoryTable.json", m_arrLstInventoryInfo.ToString());
-    }
-
     public Dictionary<int, CreateInfo> loadCreateInfo() 
     {
         if (m_bCreateInfoLoadState == false)                               // 생성정보를 로드한 이력이 없으면 불러온다.
@@ -195,7 +230,7 @@ public class DataManager : MonoSingleton<DataManager>
         return m_dicCreateInfo;                                            // 딕셔너리 반환
     }
 
-    public void addCreateInfo(CHARACTER_TYPE characterType, string userName)
+    public void addCreateInfo(CHARACTER_TYPE characterType, string userName)      // 생성 정보에 새로 생성한 캐릭터정보를 더한다.
     {
         CreateInfo createinfo = new CreateInfo();
         createinfo.m_eCharacterType = characterType;
@@ -204,7 +239,7 @@ public class DataManager : MonoSingleton<DataManager>
         saveCreateInfo();
     }
 
-    public bool deleteCreateInfo(int deleteKey)
+    public bool deleteCreateInfo(int deleteKey)         // 생성 정보에서 선택한 캐릭터를 삭제한다.
     {
         if (m_dicCreateInfo.Remove(deleteKey) == true) // 선택한 슬롯 인덱스 삭제가 완료됫으면
         {
@@ -226,8 +261,6 @@ public class DataManager : MonoSingleton<DataManager>
             sw.WriteLine(iterator.Key + "," + iterator.Value.m_strUserName + "," + ((int)(iterator.Value.m_eCharacterType)).ToString());
         sw.Close();
     }
-
-
 }
 
 

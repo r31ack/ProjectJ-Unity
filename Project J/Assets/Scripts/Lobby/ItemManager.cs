@@ -41,7 +41,6 @@ public class ItemManager : MonoBehaviour
         m_potionSlot = transform.Find("InfomationUI/WearSlot/PotionSlot").gameObject;
 
         m_clickItemMark = transform.Find("ShopUI/ClickItemMark").gameObject;
-
         m_profileUIScript = GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>();
     }
 
@@ -254,6 +253,8 @@ public class ItemManager : MonoBehaviour
                     itemButton.normalSprite = itemImageName;                                          // 상점 아이템 정보 동기화
                     itemButton.transform.position = slot.position;                                    // 포지션 동기화
                     itemButton.transform.localScale = Vector3.one;                                    // 스케일 1로 변경
+
+                    m_lnkLstInventoryItemButton.AddLast(itemButton);                                  // 링크드 리스트에 버튼정보 삽입
                     return;
                 }
             }

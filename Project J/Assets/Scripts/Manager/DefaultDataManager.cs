@@ -41,6 +41,7 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
     public Dictionary<string, DefaultItemInfo> m_dicDefaultItemInfo = new Dictionary<string, DefaultItemInfo>();                    // 아이템 고유 정보
     private bool m_bloadShopItemInfoState = false;
     private bool m_bloadItemInfoState = false;
+    private bool m_bloadDefulatCharacterInfoState = false;
 
     void Awake()
     {
@@ -60,28 +61,34 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
 
     public Dictionary<CHARACTER_TYPE, DefaultCharacterInfo> loadDefaultCharacterInfo() // SCV파일로된 캐릭터 타입별 디폴트 스텟정보를 로드해 반환
     {
-        Debug.Log("CSV 파일 캐릭터 디폴트 정보 불러오기");
-        TextAsset text = Resources.Load<TextAsset>("Data/DefaultCharacterInfo"); // 리소스 로드를 통해 테이블을 로드한다.
-        string content = text.text;                                    // content안에는 1줄로 데이터가 쭉 나열되어 있다.
-        string[] line = content.Split('\n');                           // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
-        for (int i = 2; i < line.Length - 1; i++)                      // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+        Debug.Log("캐릭터 디폴트 정보 불러오기");
+        if (m_bloadDefulatCharacterInfoState == false)
         {
-            string[] column = line[i].Split(',');                      // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
-            DefaultCharacterInfo table = new DefaultCharacterInfo();   // SCV순서와 구조체 데이터 형식이 일치하여야 함
-            CHARACTER_TYPE key = CHARACTER_TYPE.NONE;                  // key값이 될 캐릭터 종류
-            int index = 0;                                             // 0번째 열부터 시작
+            Debug.Log("CSV 파일에서 캐릭터 디폴트 정보 불러오기");
+            TextAsset text = Resources.Load<TextAsset>("Data/DefaultCharacterInfo"); // 리소스 로드를 통해 테이블을 로드한다.
+            string content = text.text;                                    // content안에는 1줄로 데이터가 쭉 나열되어 있다.
+            string[] line = content.Split('\n');                           // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
+            for (int i = 2; i < line.Length - 1; i++)                      // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+            {
+                string[] column = line[i].Split(',');                      // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
+                DefaultCharacterInfo table = new DefaultCharacterInfo();   // SCV순서와 구조체 데이터 형식이 일치하여야 함
+                CHARACTER_TYPE key = CHARACTER_TYPE.NONE;                  // key값이 될 캐릭터 종류
+                int index = 0;                                             // 0번째 열부터 시작
 
-            key = (CHARACTER_TYPE)int.Parse(column[index++]);          // 첫번째 값을 정수형으로 받은 후 enum으로 전환해 key에 대입
-            table.m_iMaxExp = int.Parse(column[index++]);
-            table.m_iMaxExpUp = int.Parse(column[index++]);
-            table.m_iMaxHp = int.Parse(column[index++]);
-            table.m_iMaxHpUp = int.Parse(column[index++]);
-            table.m_iStr = int.Parse(column[index++]);
-            table.m_iStrUp = int.Parse(column[index++]);
-            table.m_iDef = int.Parse(column[index++]);
-            table.m_iDefUp = int.Parse(column[index++]);
-            m_dicDefaultCharacterInfo.Add(key, table);
+                key = (CHARACTER_TYPE)int.Parse(column[index++]);          // 첫번째 값을 정수형으로 받은 후 enum으로 전환해 key에 대입
+                table.m_iMaxExp = int.Parse(column[index++]);
+                table.m_iMaxExpUp = int.Parse(column[index++]);
+                table.m_iMaxHp = int.Parse(column[index++]);
+                table.m_iMaxHpUp = int.Parse(column[index++]);
+                table.m_iStr = int.Parse(column[index++]);
+                table.m_iStrUp = int.Parse(column[index++]);
+                table.m_iDef = int.Parse(column[index++]);
+                table.m_iDefUp = int.Parse(column[index++]);
+                m_dicDefaultCharacterInfo.Add(key, table);
+            }
+            m_bloadDefulatCharacterInfoState = true;
         }
+        Debug.Log("캐릭터 디폴트 정보 불러오기 완료");
         return m_dicDefaultCharacterInfo;
     }
 
