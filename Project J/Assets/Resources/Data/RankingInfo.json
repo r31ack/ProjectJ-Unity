@@ -1,0 +1,194 @@
+{
+	"RankingInfo": {
+		"프레첼쿠키": {
+			"characterType": 0,
+			"score": 1000,
+			"clearTime": 280
+		},
+		"버터링쿠키": {
+			"characterType": 1,
+			"score": 980,
+			"clearTime": 370
+		},
+		"초코칩쿠키": {
+			"characterType": 0,
+			"score": 940,
+			"clearTime": 250
+		},
+		"화이트쿠키": {
+			"characterType": 0,
+			"score": 820,
+			"clearTime": 290
+		},
+		"아이비쿠키": {
+			"characterType": 0,
+			"score": 800,
+			"clearTime": 330
+		},
+		"소프트쿠키": {
+			"characterType": 1,
+			"score": 790,
+			"clearTime": 340
+		},
+		"슈크림쿠키": {
+			"characterType": 0,
+			"score": 780,
+			"clearTime": 350
+		},
+		"에이스쿠키": {
+			"characterType": 1,
+			"score": 770,
+			"clearTime": 310
+		},
+		"아몬드쿠키": {
+			"characterType": 1,
+			"score": 740,
+			"clearTime": 400
+		},
+		"후르츠쿠키": {
+			"characterType": 0,
+			"score": 690,
+			"clearTime": 420
+		},
+		"더미랭킹1": {
+			"characterType": 0,
+			"score": 650,
+			"clearTime": 410
+		},
+		"더미랭킹2": {
+			"characterType": 0,
+			"score": 600,
+			"clearTime": 400
+		},
+		"더미랭킹3": {
+			"characterType": 0,
+			"score": 550,
+			"clearTime": 390
+		},
+		"더미랭킹4": {
+			"characterType": 0,
+			"score": 500,
+			"clearTime": 380
+		},
+		"더미랭킹5": {
+			"characterType": 0,
+			"score": 450,
+			"clearTime": 370
+		},
+		"더미랭킹6": {
+			"characterType": 1,
+			"score": 400,
+			"clearTime": 360
+		},
+		"더미랭킹7": {
+			"characterType": 1,
+			"score": 350,
+			"clearTime": 350
+		},
+		"더미랭킹8": {
+			"characterType": 1,
+			"score": 300,
+			"clearTime": 340
+		},
+		"더미랭킹9": {
+			"characterType": 1,
+			"score": 250,
+			"clearTime": 330
+		},
+		"더미랭킹10": {
+			"characterType": 1,
+			"score": 200,
+			"clearTime": 320
+		},
+		"닉네임1": {
+			"characterType": 0,
+			"score": 190,
+			"clearTime": 510
+		},
+		"닉네임2": {
+			"characterType": 0,
+			"score": 180,
+			"clearTime": 520
+		},
+		"닉네임3": {
+			"characterType": 0,
+			"score": 170,
+			"clearTime": 530
+		},
+		"닉네임4": {
+			"characterType": 1,
+			"score": 160,
+			"clearTime": 540
+		},
+		"닉네임5": {
+			"characterType": 1,
+			"score": 150,
+			"clearTime": 550
+		},
+		"닉네임6": {
+			"characterType": 0,
+			"score": 140,
+			"clearTime": 560
+		},
+		"닉네임7": {
+			"characterType": 0,
+			"score": 130,
+			"clearTime": 570
+		},
+		"닉네임8": {
+			"characterType": 0,
+			"score": 120,
+			"clearTime": 580
+		},
+		"닉네임9": {
+			"characterType": 1,
+			"score": 110,
+			"clearTime": 590
+		},
+		"닉네임10": {
+			"characterType": 0,
+			"score": 100,
+			"clearTime": 600
+		},
+		"닉네임11": {
+			"characterType": 1,
+			"score": 90,
+			"clearTime": 610
+		},
+		"닉네임12": {
+			"characterType": 1,
+			"score": 80,
+			"clearTime": 620
+		},
+		"닉네임13": {
+			"characterType": 1,
+			"score": 70,
+			"clearTime": 630
+		},
+		"닉네임14": {
+			"characterType": 0,
+			"score": 60,
+			"clearTime": 640
+		},
+		"닉네임15": {
+			"characterType": 0,
+			"score": 50,
+			"clearTime": 650
+		},
+		"닉네임16": {
+			"characterType": 0,
+			"score": 40,
+			"clearTime": 660
+		},
+		"닉네임17": {
+			"characterType": 0,
+			"score": 30,
+			"clearTime": 670
+		},
+		"닉네임18": {
+			"characterType": 0,
+			"score": 20,
+			"clearTime": 680
+		}
+	}
+}
