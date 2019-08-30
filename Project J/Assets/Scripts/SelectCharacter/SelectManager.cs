@@ -70,7 +70,7 @@ public class SelectManager : MonoBehaviour
         if (selectIndexSlot != -1)
         {
             GameManager.instance.m_iSelectCharacterIndex = selectIndexSlot;  // 로비창에 넘어가기위한 캐릭터 정보 최종설정
-            SceneManager.LoadScene("LobbyScene");                                                       // 로비씬을 불러옴
+            SceneManager.LoadScene("Lobby-LoadingScene");                                                       // 로비씬을 불러옴
         }
     }
 

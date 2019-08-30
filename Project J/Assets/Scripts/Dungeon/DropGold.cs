@@ -60,7 +60,8 @@ public class DropGold : MonoBehaviour
 
     public int getGoldAmount()  // 골드를 먹어버리는 경우에도 
     {
-        ObjectPoolManager.Instance.PushToPool("DropGoldLabel", m_goldAmountLabel.gameObject);   // 오브젝트 풀로 Label을 반납해
+        if (m_goldAmountLabel != null)
+            ObjectPoolManager.Instance.PushToPool("DropGoldLabel", m_goldAmountLabel.gameObject);   // 오브젝트 풀로 Label을 반납
         m_bShowTextFlag = false;                                                                // 텍스트를 없앤다.
         return m_iGoldAmount;             
     }
@@ -73,6 +74,31 @@ public class DropGold : MonoBehaviour
     void OnBecameInvisible()               // 카메라에서 보이지 않는 경우 이벤트 함수
     {
         m_bVisibleCamera = false;
+    }
+
+    private void OnEnable()                 // 활성화 되면
+    {
+        GetComponent<Collider>().isTrigger = false;
+
+        if (IsInvoking("getTime") == true)
+            CancelInvoke("getTime");
+        if (IsInvoking("pushItem") == true)
+            CancelInvoke("pushItem");
+
+        Invoke("getTime", 2.0f);              // 2초후 먹을 수 있다.
+        Invoke("pushItem", 20.0f);              // 20초후 소실된다.
+    }   
+
+    void getTime()
+    {
+        GetComponent<Collider>().isTrigger = true;
+    }
+
+    void pushItem()
+    {
+        if (m_goldAmountLabel != null)
+            ObjectPoolManager.Instance.PushToPool("DropGoldLabel", m_goldAmountLabel.gameObject);   // 오브젝트 풀로 Label을 반납
+        ObjectPoolManager.Instance.PushToPool("DropGold", gameObject);
     }
 
     // Unity Documentation : MonoBehaviour.OnBecameVisible() Description

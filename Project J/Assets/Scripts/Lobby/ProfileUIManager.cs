@@ -18,9 +18,7 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
 
     private string m_strCharacterName;                   // 캐릭터명
 
-    // 텍스트 표기용 UI
-    private UIPanel m_explainPanel;         // 설명 관련 패널
-    private UILabel m_stateExplainLabel;       // 상태 표시 레이블
+
 
     void Awake()
     {
@@ -33,9 +31,6 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
 
         m_infomationText = GameObject.Find("ItemWindow").transform.Find("InfomationUI/InfomationText").GetComponent<UILabel>();
         m_statusText = GameObject.Find("ItemWindow").transform.Find("InfomationUI/StatusPlusText").GetComponent<UILabel>();
-
-        m_explainPanel = GameObject.Find("ExplainPanel").GetComponent<UIPanel>();
-        m_stateExplainLabel = m_explainPanel.transform.Find("StateExplain").GetComponent<UILabel>();
     }
 
     void Start()
@@ -79,24 +74,6 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
         m_expPercdentSlider.value = ((float)m_characterInfomation.m_iCurExp / (float)m_characterInfomation.m_iMaxExp);
     }
 
-    public void levelUp()
-    {
-        m_stateExplainLabel.gameObject.SetActive(true);
-        m_stateExplainLabel.text = "Level Up!";
-        m_stateExplainLabel.alpha = 1.0f;
 
-        if (IsInvoking("fadeOutText") == true)
-            CancelInvoke("fadeOutText");
-        InvokeRepeating("fadeOutText", 3.0f, 0.05f);
-    }
 
-    public void fadeOutText()
-    {
-        m_stateExplainLabel.alpha -= 0.05f;
-        if (m_stateExplainLabel.alpha <= 0.0f)
-        {
-            CancelInvoke("fadeOutText");
-            m_stateExplainLabel.gameObject.SetActive(false);
-        }
-    }
 }

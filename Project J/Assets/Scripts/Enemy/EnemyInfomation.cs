@@ -2,12 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public enum CROWD_CONTROL
 {
     NONE,
-    CRITICAL,
     STUN,
+    STUN_IMMUNE,
+    DOWN,
+    BACK_ATTACK,
+}
+
+public enum SPECIAL_ATTACK
+{
+    CRITICAL,               // 크리티컬
+    BACK_ATTACK,            // 백어택
+    CRITICAL_BACK_ATTACK,   // 크리티컬 백어택
 }
 
 public enum ENEMY_STATE   // 기본 적의 AI 상태 (아래로 갈수록 높은 우선순위)
@@ -18,6 +28,7 @@ public enum ENEMY_STATE   // 기본 적의 AI 상태 (아래로 갈수록 높은
     RETURN,      // 복귀 (생성 위치에서 너무 멀어진 경우)
     GET_DAMAGE,  // 피격 (공격자를 대상으로 무조건 따라간다.)
     BASE_ATTACK, // 공격 (공격범위 안에 들어온 경우)
+    SKILL,       // 스킬 (몬스터 타입별 확장용)
     STUN = 19,   // 스턴
     DIE = 444,   // 사망
 }
@@ -35,9 +46,9 @@ public class EnemyInfomation : Enemy
     private float m_fPatrolTimer;                // 순찰 유지 타이머
     private float m_fFollowTargetTimer;          // 피격시 쫓아오는 타이머 
 
-    private NavMeshAgent m_agent;                          // 네비메시 에이전트 
+    protected NavMeshAgent m_agent;                          // 네비메시 에이전트 
     private Vector3 m_spawnPosition;                       // 생성된 위치
-    private float m_fSpawnDistance;                        // 생성된 위치와의 거리차
+    protected float m_fSpawnDistance;                        // 생성된 위치와의 거리차
     private Vector3 m_patrolPosition;                      // 순찰하려는 위치
     protected ENEMY_STATE m_eEnemyState = ENEMY_STATE.IDLE;  // 적의 상태
 
@@ -48,17 +59,15 @@ public class EnemyInfomation : Enemy
 
     private float m_fCoroutineTime = 0.1f;    // 코루틴 주기
 
-
     void Awake()
     {
-        m_fMaxHP = 100;
+        m_fMaxHP = 300;
         m_fCurHP = m_fMaxHP;
 
         m_fIdleTimer = idleHoldTime;                   
         m_fPatrolTimer = patrolHoldTime;           
         m_fFollowTargetTimer = followHoldTime;
         m_iGetExp = 10;
-
     }
 
     void Start()
@@ -159,7 +168,7 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
         }
     }
 
-    private void distanceStateTransition()                 // 거리에 따른 상태 전이 함수 
+    virtual protected void distanceStateTransition()                 // 거리에 따른 상태 전이 함수 
     {
         if (m_fSpawnDistance > 100)                        // 처음 생성된 위치로부터 100이상 벗어나면
         {
@@ -208,7 +217,7 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
         }
     }
 
-    void animationTransition()                       // 애니메이션의 전이에 따른 상태 전이
+    public virtual void animationTransition()                       // 애니메이션의 전이에 따른 상태 전이
     {
         if (m_aniTransition.IsName("BaseAttack1 -> Idle") == true || 
             m_aniTransition.IsName("BaseAttack2 -> Idle") == true ||
@@ -258,6 +267,10 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
             m_animator.SetTrigger("baseAttackTrigger");                  // attack 트리거 발동
             m_animator.SetInteger("baseAttackType", Random.Range(1, 4)); //1~3의 공격중 하나 발동
             break;
+        case ENEMY_STATE.SKILL: // 스킬
+            m_agent.SetDestination(transform.position); // 타겟을 자기자신으로 하여 
+            m_agent.speed = 0;                          // 이동을 멈춤
+            break;
         }
     }
 
@@ -282,13 +295,6 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
             m_punchCollider.isTrigger = true;           // 공격판정 콜라이더 트리거 활성화
             m_fCurAttackDamage = 2.0f;                  // 현재 모션에서의 공격 데미지 2
             m_fAttackHoldTime = 1.0f;                   // 공격판정 유지시간 1
-        }
-        else if (m_aniState.IsName("Shout") == true)    // 소리치기 이면
-        {
-            if (Vector3.Distance(m_targetTransform.position, transform.position) < 5)   // 콜라이더를 쓰지 않고 반경 10거리 전범위 스턴 공격
-            {
-                m_targetTransform.GetComponent<UnityChanInfomation>().attated(10, true);
-            }
         }
     }
 
@@ -339,6 +345,8 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
 
     protected virtual void dropItem()
     {
+        if (SceneManager.GetActiveScene().name == "Stage1-BossScene")
+            return;
         GameObject dropItem = ObjectPoolManager.Instance.PopFromPool("DropItem");
         dropItem.transform.position = transform.position + Vector3.right * 5;        // 위치동기화
         dropItem.transform.rotation = transform.rotation;                            // 방향동기화
@@ -347,6 +355,8 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
 
     protected virtual void dropGold()
     {
+        if (SceneManager.GetActiveScene().name == "Stage1-BossScene")
+            return;
         GameObject dropGold = ObjectPoolManager.Instance.PopFromPool("DropGold");
         dropGold.transform.position = transform.position + Vector3.left * 5;   // 위치동기화
         dropGold.transform.rotation = transform.rotation;   // 방향동기화
@@ -357,38 +367,36 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
     {
         if (coll.gameObject.tag == "player")                   // 충돌 대상이 적 태그를 가지고 있으면
         {
-            unityChanScripte.attated(m_fCurAttackDamage);   // 해당 스크립트를 받아와서 나의 현재 공격모션에 따른 데미지를 부여함
+            unityChanScripte.attated(m_fCurAttackDamage,CROWD_CONTROL.NONE);   // 해당 스크립트를 받아와서 나의 현재 공격모션에 따른 데미지를 부여함
         }
     }
 
     void OnEnable()     // 스크립트 활성화 이벤트 
     {
-        UnityChanInfomation.s_eventPlayerState += this.playerState; // 델리게이트 연결
+        GameManager.instance.m_iEnemyCount++;                       // 적의 카운트를 늘리고
+        UnityChanInfomation.s_eventPlayerState += this.playerState; // 플레이어와 델리게이트 연결
     }
-    void OnDisable()    // 스크립트 비활성화 이벤트
+
+    void OnDisable()    // 스크립트 비활성화 이벤트 (적은 게임 도중에 사망이 아니면 스크립트가 비활성화될 일이 없음)
     {
-        UnityChanInfomation.s_eventPlayerState -= this.playerState; // 델리게이트 연결해제
+        GameManager.instance.m_iEnemyCount--;                       // 적의 카운트를 1 줄임
+        if (GameManager.instance.m_iEnemyCount == 0)                // 적의 카운트가 없으면
+            GameManager.instance.clearDungeon();                    // 해당 던전은 적이 없다고 게임매니저에게 알림
+        UnityChanInfomation.s_eventPlayerState -= this.playerState; // 플레이어와 델리게이트 연결해제
     }
 
     void playerState(int state)
     {
         if (state == 444)    // 사망
             m_targetTransform = m_sunTransform;
-        if (state == 1004)    // 천사
-        {
-            m_targetTransform = m_sunTransform;
-        }
-        if (state == 6666)    // 부활
+        if (state == 1004)    // 부활, 감지 가능
         {
             m_targetTransform = m_playerTransform;
         }
-        if(state > 10 && state < 50)
+        if(state > 10 && state < 50)                // state값이 10보다 크고 50보다 작으면 범위로 사용할 예정
         {
-            m_fTargetDistance = Vector3.Distance(m_playerTransform.position, transform.position); // 플레이어와의 거리차를 계산함
-            if (m_fTargetDistance < state)      // 타겟과의 거리가 넘어온 인자보다 낮으면
-            {
-                attacted(30, CROWD_CONTROL.STUN);
-            }
+            if (m_fTargetDistance < state)          // 타겟과의 거리가 넘어온 인자보다 낮으면
+                attacted(CharacterInfoManager.instance.m_iCurStr * 0.8f, CROWD_CONTROL.STUN);   // 0.8배율의 데미지를 주고 스턴상태로 만듬
         }
     }
 
@@ -400,8 +408,10 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
 
         if (cc == CROWD_CONTROL.STUN)
             damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]스턴[-]";
-        else if (cc == CROWD_CONTROL.CRITICAL)
-            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]치명타[-]";
+        else if (cc == CROWD_CONTROL.STUN_IMMUNE)
+            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]스턴 면역[-]";
+        else if (cc == CROWD_CONTROL.BACK_ATTACK)
+            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]백어택[-]";
         else
             damageTextScripte.damageAmount = damageAmount.ToString();
         damageTextScripte.targetTransform = transform.position;

@@ -19,7 +19,9 @@ public class CreateManager : MonoBehaviour
     private CHARACTER_TYPE m_eCharacterType = CHARACTER_TYPE.NONE;
 
     private GameObject m_createTimerCanvas;
+    private GameObject m_createFailCanvas;
     private float m_fCreateTimer = -1.0f;
+   
 
     // Start is called before the first frame update
     void Start()
@@ -32,7 +34,8 @@ public class CreateManager : MonoBehaviour
        m_inputNameWindow.gameObject.SetActive(false);          // 종료 창 초기상태 false
        m_inputNameText = m_inputNameWindow.transform.Find("InputField/Text").GetComponent<Text>();
 
-       m_createTimerCanvas = transform.Find("CreateTimerCanvas").gameObject;
+        m_createTimerCanvas = transform.Find("CreateTimerCanvas").gameObject;
+        m_createFailCanvas = transform.Find("CreateFailCanvas").gameObject;
     }
 
     // Update is called once per frame
@@ -86,12 +89,27 @@ public class CreateManager : MonoBehaviour
 
     public void InputNameFinish()          // 닉네임 입력 완료
     {
-        DataManager.instance.addCreateInfo(m_eCharacterType, m_inputNameText.text);
-        DataManager.instance.saveDefaultUserInfo(GameManager.instance.m_iCreateCharacterIndex, m_inputNameText.text, m_eCharacterType);
-        m_binputNamWindowFlag = false;
-        m_inputNameWindow.gameObject.SetActive(m_binputNamWindowFlag);
-        m_fCreateTimer = 2.0f;
-        m_createTimerCanvas.SetActive(true);
+        if (DataManager.instance.equalNameCheck(m_inputNameText.text) == true)
+        {
+            m_createFailCanvas.SetActive(true);
+            Invoke("activeFalseCanvas", 1.0f);
+            Debug.Log("중복임");
+            return;
+        }
+        else
+        {
+            DataManager.instance.addCreateInfo(m_eCharacterType, m_inputNameText.text);
+            DataManager.instance.saveDefaultUserInfo(GameManager.instance.m_iCreateCharacterIndex, m_inputNameText.text, m_eCharacterType);
+            m_binputNamWindowFlag = false;
+            m_inputNameWindow.gameObject.SetActive(m_binputNamWindowFlag);
+            m_fCreateTimer = 2.0f;
+            m_createTimerCanvas.SetActive(true);
+        }
+    }
+
+    public void activeFalseCanvas()
+    {
+        m_createFailCanvas.SetActive(false);
     }
 
     public void createTimer()

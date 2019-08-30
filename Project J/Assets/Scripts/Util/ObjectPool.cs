@@ -9,15 +9,13 @@ public class ObjectPool
     public GameObject prefab;                                       // 프리팹 
     public int poolCount;                                           // 풀 오브젝트 최대 갯수
     public Transform parentTransform = null;                        // 오브젝트를 담아둘 부모 트랜스폼
-    public List<GameObject> m_arrLstPool = new List<GameObject>();  // 풀 오브젝트 저장소
+    public Queue<GameObject> m_queuePool = new Queue<GameObject>();  // 풀 오브젝트 저장소
   
     public void init(Transform parent = null)
     {
-        m_arrLstPool.Capacity = poolCount;                         // 용량 확보
-
         for (int i=0; i<poolCount; i++)
         {
-            m_arrLstPool.Add(createObject());                // 풀 갯수만큼 세팅
+            m_queuePool.Enqueue(createObject());   // 풀 갯수만큼 세팅            
         }
     }
 
@@ -25,16 +23,15 @@ public class ObjectPool
     {
         poolObject.transform.SetParent(parentTransform);        // 부모 세팅
         poolObject.SetActive(false);                            // 활성화 끄기
-        m_arrLstPool.Add(poolObject);                           // 오브젝트 풀에 삽입
+        m_queuePool.Enqueue(poolObject);                           // 오브젝트 풀에 삽입
     }
 
     public GameObject pop()              // 객체가 필요할 때 오브젝트 풀에 요청
     {
-        if (m_arrLstPool.Count == 0)                               // 갯수가 0이면
-            m_arrLstPool.Add(createObject());                // 재할당
-
-        GameObject poolObject = m_arrLstPool[m_arrLstPool.Count-1];         // max 인덱스의 오브젝트 풀을 반환한다
-        m_arrLstPool.RemoveAt(m_arrLstPool.Count-1);                        // max 인덱스 삭제
+        if (m_queuePool.Count == 0)                               // 갯수가 0이면
+            m_queuePool.Enqueue(createObject());                // 재할당
+        
+        GameObject poolObject = m_queuePool.Dequeue();         // 끝에있는 오브젝트 풀을 반환한다
         return poolObject;                                      
     }
 

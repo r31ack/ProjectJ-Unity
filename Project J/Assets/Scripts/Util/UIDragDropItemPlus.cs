@@ -86,6 +86,7 @@ public class UIDragDropItemPlus : UIDragDropItem
         pos.z = 0f;
         mTrans.localPosition = pos;
 
+
         if (container.tag == "shopItemSlot")    // 콘테이너가 상점 아이템슬롯이면
         {
             int saleGoldCount = GameObject.Find("ItemWindow").GetComponent<ItemManager>().getBuyGold(mTrans.GetComponent<UIButton>().normalSprite);   // 아이템 구매 가격을 받아와 플레이어 골드 상승

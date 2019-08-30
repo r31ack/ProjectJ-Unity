@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public enum ITEM_TYPE  // 아이템 종류
 {
@@ -19,29 +20,35 @@ public class ItemManager : MonoBehaviour
     private UILabel m_explainLabel;                                                          // 아이템 설명 레이블
     private ITEM_TYPE m_eShopItemType;                                                        // 상점에서 클릭한 아이템 타입
 
+    // 특정 아이템을 선택했을때 필요한 변수
     private UIButton m_clickShopItem = null;                                              // 클릭한 상점 아이템의 버튼
-    private GameObject m_clickItemMark;                                                    // 아이템 클릭 표시용 스프라이트 오브젝트         
+    private UIButton m_clickInventoryItem = null;                                         // 클릭한 인벤토리 아이템의 버튼
+    private GameObject m_clickShopItemMark;                                               // 아이템 클릭 표시용 스프라이트 오브젝트         
+    private GameObject m_clickInventoryItemMark;                                          // 아이템 클릭 표시용 스프라이트 오브젝트 
 
+    // 장착 타입별 슬롯
+    private GameObject m_infomationUI;        // 인포메이션 UI (인포메이션 창의 활성화여부에 따라 업데이트를 추가 체크)
     private GameObject m_weaponSlot;
     private GameObject m_armorSlot;
     private GameObject m_potionSlot;
-
-    private ProfileUIManager m_profileUIScript;         // 프로필 UI와 관련된 스크립트
+    private UILabel m_dynamicButtonLabel;                  // 열은 창에 맞게 착용하기, 버리기, 판매하기 등으로 바뀌는 기능
 
     private void Awake()
     {
         loadInventoryItem();                                                                       // 인벤토리 데이터를 불러와 슬롯에 넣는다
         loadShopItem();                                                                            // 상점 데이터를 불러와 슬롯에 넣는다.
-        m_dicDefaultItemInfo = DefaultDataManager.instance.loadDefaultItemInfo();                                     // 아이템 정보를 가지고있는 딕셔너리를 받아옴
-        m_explainItem = GameObject.Find("ExplainPanel").transform.Find("ItemExplainBone").GetComponent<UISprite>();  // 아이템 클릭시 아이템 설명 스프라이트이미지
-        m_explainLabel = m_explainItem.transform.Find("ItemExplainLabel").GetComponent<UILabel>();                   // 아이템 클릭시 아이템 설명 레이블
+        m_dicDefaultItemInfo = DefaultDataManager.instance.loadDefaultItemInfo();                      // 아이템 정보를 가지고있는 딕셔너리를 받아옴
+        m_explainItem = transform.Find("ItemExplainBone").GetComponent<UISprite>();                    // 아이템 클릭시 아이템 설명 스프라이트이미지
+        m_explainLabel = m_explainItem.transform.Find("ItemExplainLabel").GetComponent<UILabel>();     // 아이템 클릭시 아이템 설명 레이블
 
-        m_armorSlot = transform.Find("InfomationUI/WearSlot/ArmorSlot").gameObject;
-        m_weaponSlot = transform.Find("InfomationUI/WearSlot/WeaponSlot").gameObject;
-        m_potionSlot = transform.Find("InfomationUI/WearSlot/PotionSlot").gameObject;
+        m_infomationUI = transform.Find("InfomationUI").gameObject;
+        m_armorSlot = m_infomationUI.transform.Find("WearSlot/ArmorSlot").gameObject;
+        m_weaponSlot = m_infomationUI.transform.Find("WearSlot/WeaponSlot").gameObject;
+        m_potionSlot = m_infomationUI.transform.Find("WearSlot/PotionSlot").gameObject;
 
-        m_clickItemMark = transform.Find("ShopUI/ClickItemMark").gameObject;
-        m_profileUIScript = GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>();
+        m_clickShopItemMark = transform.Find("ShopUI/ClickItemMark").gameObject;
+        m_clickInventoryItemMark = transform.Find("InventoryUI/ClickItemMark").gameObject;
+        m_dynamicButtonLabel = transform.Find("InventoryUI/DynamicLabel").GetComponent<UILabel>();
     }
 
     private void Start()
@@ -51,9 +58,10 @@ public class ItemManager : MonoBehaviour
 
     private void Update()
     {
-        ItemWear();         // 아이템을 입엇는지 확인
+        if (m_infomationUI.activeSelf == true)  // 인포메이션 UI가 활성화되어 있는 경우
+            ItemWear();                         // 아이템을 입엇는지 확인
         explainItem();      // 설명창 활성화 확인
-        shopItemClick();
+        ItemClick();
 
         if(Input.GetKeyDown(KeyCode.F12))   // 임시 저장
         {
@@ -67,23 +75,27 @@ public class ItemManager : MonoBehaviour
         {
             if (m_armorSlot.transform.childCount != 0)  // 자식 갯수가 0이 아니면
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iArmorDef = GameObject.Find("ItemWindow").GetComponent<ItemManager>().getValue(m_armorSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
-                m_profileUIScript.changeStatus();       // 스텟 변화 적용
+                CharacterInfoManager.instance.m_characterInfo.m_iArmorDef = getValue(m_armorSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
+                CharacterInfoManager.instance.replaceStr();
+                ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             else
             {
                 CharacterInfoManager.instance.m_characterInfo.m_iArmorDef = 0;
-                m_profileUIScript.changeStatus();       // 스텟 변화 적용
+                CharacterInfoManager.instance.replaceStr();
+                ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             if (m_weaponSlot.transform.childCount != 0)  // 자식 갯수가 0이 아니면
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = GameObject.Find("ItemWindow").GetComponent<ItemManager>().getValue(m_weaponSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
-                m_profileUIScript.changeStatus();       // 스텟 변화 적용
+                CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_weaponSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
+                CharacterInfoManager.instance.replaceStr();
+                ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             else
             {
                 CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = 0;
-                m_profileUIScript.changeStatus();       // 스텟 변화 적용
+                CharacterInfoManager.instance.replaceStr();
+                ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
         }
     }
@@ -143,7 +155,7 @@ public class ItemManager : MonoBehaviour
             m_explainItem.gameObject.SetActive(false);  // 설명창 비활성화
     }
 
-    private void shopItemClick()      // 상점 아이템을 클릭
+    private void ItemClick()      // 아이템을 클릭
     {
         if (Input.GetMouseButtonDown(0) == true)                // 마우스를 클릭하면
         {
@@ -151,11 +163,27 @@ public class ItemManager : MonoBehaviour
             {
                 if (iterator.Value.state == UIButtonColor.State.Pressed)     // 눌러저 있는 버튼을 찾은 경우
                 {
-                    m_clickItemMark.SetActive(true);
+                    m_clickShopItemMark.SetActive(true);
                     m_clickShopItem = iterator.Value;                        // 클릭 상점 아이템에 변수에 대입
-                    m_clickItemMark.transform.position = iterator.Value.transform.position; // 위치 동기화  
+                    m_clickShopItemMark.transform.position = iterator.Value.transform.position; // 위치 동기화  
                 }
             }
+            foreach (UIButton iterator in m_lnkLstInventoryItemButton) // 반복자로 인벤토리 아이템의 딕셔너리를 순회
+            {
+                if (iterator.state == UIButtonColor.State.Pressed)     // 눌러저 있는 버튼을 찾은 경우
+                {
+                    m_clickInventoryItemMark.SetActive(true);
+                    m_clickInventoryItem = iterator;                        // 클릭 상점 아이템에 변수에 대입
+                    m_clickInventoryItemMark.transform.position = iterator.transform.position; // 위치 동기화  
+                }
+            }
+        }
+
+        if (m_clickInventoryItem == null)                                                          // 클릭한 아이템이 없으면
+            m_clickInventoryItemMark.SetActive(false);                                             // 마크 비활성화
+        else                                                                                       // 클릭한 아이템이 있으면
+        {
+            m_clickInventoryItemMark.transform.position = m_clickInventoryItem.transform.position; // 마크의 위치는 해당 아이템의 위치
         }
     }
     private void loadInventoryItem() // 인벤토리 데이터를 불러온 후 해당 데이터를 기반으로 아이템을 생성하고 슬롯에 넣는다.
@@ -230,7 +258,7 @@ public class ItemManager : MonoBehaviour
             {
                 CharacterInfoManager.instance.m_characterInfo.m_iGold -= buyGold;                  // 내 골드 정보에서 구매 가격을 뺀다.
                 putInventroyItem(m_clickShopItem.normalSprite);                                    // 클릭한 상점 아이템을 인벤토리에 넣는다.
-                m_profileUIScript.changeGold();                                                    // 구매할때의 골드 변화 적용
+                ProfileUIManager.Instance.changeGold();                                                    // 구매할때의 골드 변화 적용
             }
             else                                                                                   // 돈이 없으면 종료
                 return;
@@ -254,6 +282,7 @@ public class ItemManager : MonoBehaviour
                     itemButton.transform.position = slot.position;                                    // 포지션 동기화
                     itemButton.transform.localScale = Vector3.one;                                    // 스케일 1로 변경
 
+                    ITEM_TYPE putItemType = getItemType(itemImageName);                               // 넣을 아이템 타입을 찾아서                   
                     m_lnkLstInventoryItemButton.AddLast(itemButton);                                  // 링크드 리스트에 버튼정보 삽입
                     return;
                 }
@@ -264,21 +293,97 @@ public class ItemManager : MonoBehaviour
     public void weaponTypeButtonClick()
     {
         m_clickShopItem = null;      // 클릭한 상점 아이템 초기화
-        m_clickItemMark.SetActive(false);
+        m_clickShopItemMark.SetActive(false);
         showShopItem(ITEM_TYPE.WEAPON);
     }
 
     public void armorTypeButtonClick()
     {
         m_clickShopItem = null;      // 클릭한 상점 아이템 초기화
-        m_clickItemMark.SetActive(false);
+        m_clickShopItemMark.SetActive(false);
         showShopItem(ITEM_TYPE.ARMOR);
     }
 
     public void potionTypeButtonClick()
     {
         m_clickShopItem = null;      // 클릭한 상점 아이템 초기화
-        m_clickItemMark.SetActive(false);
+        m_clickShopItemMark.SetActive(false);
         showShopItem(ITEM_TYPE.POTION);
-    }       
+    }
+
+    public void dynamicButtonClick()
+    {
+        if (m_dynamicButtonLabel.text == "착용하기")
+        {
+            ITEM_TYPE selectItemType = getItemType(m_clickInventoryItem.normalSprite);
+            if (selectItemType == ITEM_TYPE.WEAPON)
+            {
+                if (m_weaponSlot.transform.childCount == 0)  // 자식 갯수가 0이면
+                {
+                    m_clickInventoryItem.transform.parent = m_weaponSlot.transform;             // 입음
+                    m_clickInventoryItem.transform.position = m_weaponSlot.transform.position;  // 위치 동기화
+                    CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
+                    CharacterInfoManager.instance.replaceStr();
+                    ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
+                    m_clickInventoryItem = null;
+                }
+            }
+            else if (selectItemType == ITEM_TYPE.ARMOR)
+            {
+                if (m_armorSlot.transform.childCount == 0)  // 자식 갯수가 0이면
+                {
+                    m_clickInventoryItem.transform.parent = m_armorSlot.transform;             // 입음
+                    m_clickInventoryItem.transform.position = m_armorSlot.transform.position;  // 위치 동기화
+                    CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
+                    CharacterInfoManager.instance.replaceStr();
+                    ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
+                    m_clickInventoryItem = null;
+                }
+            }
+            else if (selectItemType == ITEM_TYPE.POTION)
+            {
+                if (m_potionSlot.transform.childCount == 0)  // 자식 갯수가 0이면
+                {
+                    m_clickInventoryItem.transform.parent = m_potionSlot.transform;             // 입음
+                    m_clickInventoryItem.transform.position = m_potionSlot.transform.position;  // 위치 동기화
+                    m_clickInventoryItem = null;
+                }
+            }
+        }
+        else if (m_dynamicButtonLabel.text == "판매하기")
+        {
+            if (m_clickInventoryItem != null)
+            {
+                int saleGoldCount = getBuyGold(m_clickInventoryItem.normalSprite);               // 클릭한 아이템 구매 가격을 받아와 플레이어 골드 상승
+                CharacterInfoManager.instance.m_characterInfo.m_iGold += saleGoldCount;          // 캐릭터 정보에 골드량을 증가시킨다.
+                GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>().changeGold();      // UI에 골드량을 바꾼다.
+                m_lnkLstInventoryItemButton.Remove(m_clickInventoryItem);
+                Destroy(m_clickInventoryItem.gameObject);                                        // 아이템 삭제
+            }
+        }
+        else if (m_dynamicButtonLabel.text == "버리기")
+        {
+            m_lnkLstInventoryItemButton.Remove(m_clickInventoryItem);
+            Destroy(m_clickInventoryItem.gameObject);                                        // 해당 아이템 파괴
+        }
+    }
+
+    public void sortInventory()     // 빈 슬롯을 당김
+    {
+        int row = 0;
+        int col = 0;
+
+        foreach (UIButton iterator in m_lnkLstInventoryItemButton) // 반복자로 인벤토리내에 있는 아이템을 순회
+        {
+            Transform slot = transform.Find("InventoryUI/InventorySlot/InventorySlot" + row + col);  // 슬롯을 찾아서
+            iterator.transform.parent = slot;                                                        // 부모 슬롯 변경
+            iterator.transform.position = slot.position;                                             // 부모 슬롯 위치 재조립
+            col++;
+            if (col >= 4)
+            {
+                col = 0;
+                row++;
+            }
+        }
+    }
 }

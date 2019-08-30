@@ -55,9 +55,9 @@ public class RankingCell : MonoBehaviour   // 랭킹 하나의 정보를 가지�
         }
         m_userNameText.text = m_arrLstRankingInfo[rankNumber-1].m_strUserName;
         m_scoreText.text = m_arrLstRankingInfo[rankNumber-1].m_iScore.ToString() + "점";
-        m_clearTimeText.text = m_arrLstRankingInfo[rankNumber-1].m_fClearTime.ToString("N2") + "초";
+        m_clearTimeText.text = m_arrLstRankingInfo[rankNumber-1].m_fClearTime.ToString("N2");
 
-        if (m_userNameText.text == "다이제쿠키")
+        if (m_userNameText.text == CharacterInfoManager.instance.m_characterInfo.m_strUserName)
             m_cellBone.spriteName = "Glow - Inner";
         else
             m_cellBone.spriteName = "Highlight - Shadowed";

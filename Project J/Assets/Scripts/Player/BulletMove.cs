@@ -40,7 +40,7 @@ public class BulletMove : MonoBehaviour
         if (coll.gameObject.tag == "enemy")                   // 충돌 대상이 적 태그를 가지고 있으면
         {
             EnemyInfomation enemyScript = coll.GetComponentInParent<EnemyInfomation>();   // 적 스크립트를 받아와서
-            enemyScript.attacted(50);         // 50데미지 부여
+            enemyScript.attacted(1*CharacterInfoManager.instance.m_iCurStr);         // 1배율의 데미지 부여
         }
     }
 }

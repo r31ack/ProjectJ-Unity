@@ -239,6 +239,17 @@ public class DataManager : MonoSingleton<DataManager>
         saveCreateInfo();
     }
 
+    public bool equalNameCheck(string userName)    // 동일한 닉네임이 존재하는지 체크 (임시적인 JSON으로 다른 유저명을 불러와 체크함)
+    {
+        loadRankingInfo();
+        foreach (var iterator in m_dicRankingInfo)
+        {
+            if (userName == iterator.Key)
+                return true;
+        }
+        return false;
+    }
+
     public bool deleteCreateInfo(int deleteKey)         // 생성 정보에서 선택한 캐릭터를 삭제한다.
     {
         if (m_dicCreateInfo.Remove(deleteKey) == true) // 선택한 슬롯 인덱스 삭제가 완료됫으면

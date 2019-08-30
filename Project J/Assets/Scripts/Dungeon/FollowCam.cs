@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FollowCam : MonoBehaviour
 {
-    private Transform target = null;        //추적 대상
+    public Transform target = null;        //추적 대상
     public float moveDamping    = 15.0f;    //이동 속도 계수
     public float rotateDamping  = 10.0f;    //회전 속도 계수
     public float distance       = 5.0f;     //추적 대상과의 거리
@@ -20,12 +20,11 @@ public class FollowCam : MonoBehaviour
     private Dictionary<GameObject,float> m_lnkLstRayCastMap = new Dictionary<GameObject,float>();
     private float KnockBackTimer = 0.0f;
 
-
     void Start()
     {
         //CameraRig의 Transform 컴포넌트의 추출
         tr = GetComponent<Transform>();
-        target = GameObject.Find("CameraTarget").GetComponent<Transform>();
+        target = GameObject.Find("Player").transform.Find("CameraTarget");
     }
 
     //주인공 캐릭터의 이동 로직이 완료된 후 처리하기 위해 LateUpdate에서 구현
@@ -79,7 +78,6 @@ public class FollowCam : MonoBehaviour
             Color mapColor = renderer.material.color;
             mapColor.a = 0.2f;
             renderer.material.color = mapColor;
-            Debug.Log("맵과부딪힘");
         }
         if (coll.gameObject.tag == "enemy")
         {
@@ -87,10 +85,15 @@ public class FollowCam : MonoBehaviour
             {
                 coll.transform.rotation = transform.rotation * new Quaternion(0, 1, 0, 0);
                 coll.transform.Translate(coll.transform.forward * -100 * Time.deltaTime, Space.World);
-                coll.GetComponent<EnemyInfomation>().attacted(3);
+                coll.GetComponent<EnemyInfomation>().attacted(CharacterInfoManager.instance.m_iCurStr*0.1f);
                 KnockBackTimer = 0.1f;
             }
         }
+    }
+
+    public void setKnockBackTimer(float timer)
+    {
+        KnockBackTimer = timer;
     }
 
     private void OnTriggerExit(Collider coll)                // 맵충돌 투명화 복구

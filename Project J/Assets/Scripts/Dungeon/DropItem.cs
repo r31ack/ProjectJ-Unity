@@ -42,6 +42,7 @@ public class DropItem : MonoBehaviour
             if (m_bShowTextFlag == true)                                                              // 텍스트가 노출되어 있는 경우
             {
                 ObjectPoolManager.Instance.PushToPool("DropItemLabel", m_ItemNameLabel.gameObject);   // 오브젝트 풀로부터 Label을 반납
+                m_ItemNameLabel = null;
                 m_bShowTextFlag = false;                                                              // 텍스트를 없앤다.
             }
         }
@@ -63,7 +64,8 @@ public class DropItem : MonoBehaviour
 
     public string getItenName()    // 아이템 고유명 반환 
     {
-        ObjectPoolManager.Instance.PushToPool("DropItemLabel", m_ItemNameLabel.gameObject);   // 오브젝트 풀로부터 Label을 반납
+        if (m_ItemNameLabel != null)
+            ObjectPoolManager.Instance.PushToPool("DropItemLabel", m_ItemNameLabel.gameObject);   // 오브젝트 풀로부터 Label을 반납
         m_bShowTextFlag = false;                                                              // 텍스트를 없앤다.
         return m_strItemImageName;
     }
@@ -76,6 +78,31 @@ public class DropItem : MonoBehaviour
     void OnBecameInvisible()               // 카메라에서 보이지 않는 경우 이벤트 함수
     {
         m_bVisibleCamera = false;
+    }
+
+    private void OnEnable()                 // 활성화 되면
+    {
+        GetComponent<Collider>().isTrigger = false;
+
+        if (IsInvoking("getTime") == true)
+            CancelInvoke("getTime");
+        if (IsInvoking("pushItem") == true)
+            CancelInvoke("pushItem");
+
+        Invoke("getTime", 2.0f);              // 2초후 먹을 수 있다.
+        Invoke("pushItem", 10.0f);              // 10초후 소실된다.
+    }
+
+    void getTime()
+    {
+        GetComponent<Collider>().isTrigger = true;
+    }
+
+    void pushItem()
+    {
+        if (m_ItemNameLabel != null)
+            ObjectPoolManager.Instance.PushToPool("DropItemLabel", m_ItemNameLabel.gameObject);   // 오브젝트 풀로부터 Label을 반납
+        ObjectPoolManager.Instance.PushToPool("DropItem", gameObject);
     }
 
     // Unity Documentation : MonoBehaviour.OnBecameVisible() Description
