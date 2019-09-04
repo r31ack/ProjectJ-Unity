@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있는 스크립트
+public class AkazaState : PlayerState    // Akaza 상태 정보를 담고 있는 스크립트
 {
     // 스킬 이펙트 중 광원을 컨트롤하기 위함
     GameObject m_mainRight;
@@ -19,17 +19,11 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
     public float m_fHlodTimer = 0.0f;
     public float m_fLeafAttackTimer = 0.0f;
     public float m_fSwordWindTimer = 0.0f;
+    public bool m_fSwordWindChargeFlag = false;
+
     private float m_fCameraRotate = 0.0f;      // 회전시간
     private float m_fAvoidInertiaTime = 0.0f;  // 긴급회피 관성시간
-
-    public bool m_fSwordWindChargeFlag = false;
     private DIRECTION m_eDirection = DIRECTION.NONE;
-
-    private ItemManager m_itemManagerScript;           // 아이템 매니저 스크립트
-    private ProfileUIManager m_profileUIManagerScript; // 프로필 UI 매니저 스크립트
-
-    public delegate void playerState(int state);                  // 플레이어 사망 델리게이트
-    public static event playerState s_eventPlayerState;
 
     // 이펙트 관련 함수
     private ParticleSystem m_swordWindChargeEffect;
@@ -37,7 +31,6 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
     private ParticleSystem m_leafAttackEffect;
     private ParticleSystem m_rushEffect;                // 돌진 이펙트
     private ParticleSystem m_flashEffect;               // 
-    private ParticleSystem m_levelUpEffect;             // 레벨업 이펙트
     private MeleeWeaponTrail m_baseSlashTrail;
 
     private float m_fTrailEffectTime = 0.0f;
@@ -47,9 +40,6 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
     {
         m_mainRight = GameObject.Find("Directional Light");
         m_playerRight = transform.Find("EffectLight").gameObject;
-
-        m_itemManagerScript = GameObject.Find("ItemWindow").GetComponent<ItemManager>();
-        m_profileUIManagerScript = GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>();
 
         // 캐릭터 종속 이펙트
         m_swordWindChargeEffect = transform.Find("SwordWindChargeEffect").GetComponent<ParticleSystem>();   // 칼바람 충전 파티클
@@ -61,7 +51,6 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         m_leafAttackRange = GameObject.Find("AttackRange").gameObject;
         m_leafAttackRangeEffect = GameObject.Find("LeapAttackRangeEffect").GetComponent<ParticleSystem>();
         m_leafAttackEffect = GameObject.Find("SkillEffectPool").transform.Find("LeafAttackEffect").GetComponent<ParticleSystem>();
-
     }
 
     void Start()
@@ -80,16 +69,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         m_flashEffect.Stop();
     }
 
-    void Update()
-    {
-        m_aniState = m_animator.GetCurrentAnimatorStateInfo(0);       // 현재 애니메이션 진행상태
-        m_aniTransition = m_animator.GetAnimatorTransitionInfo(0);    // 현재 애니메이션 전환상태
-        timerState();          // 타이머가 걸린 동작을 처리하는 함수
-        animationTransition(); // 애니메이션 전이시 정보 처리 관련 함수
-        animationState();      // 애니메이션 상태 도중 정보 처리 관련 함수
-    }
-
-    void timerState()          // 타이머가 걸린 동작을 처리하는 함수
+    override protected void timerState()          // 타이머가 걸린 동작을 처리하는 함수
     {
         float baseComboTimer = m_animator.GetFloat("baseComboTimer");   // 콤보 유지 시간 처리
         if (baseComboTimer > 0.0f)
@@ -117,7 +97,6 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             m_fAvoidInertiaTime -= Time.deltaTime;
         }
 
-
         if (m_fCameraRotate > 0.0f)                                             // 회전 시간
         {
             m_fCameraRotate -= Time.deltaTime;
@@ -138,7 +117,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             }
         }
     }
-    void animationTransition() // 애니메이션 전이시 정보 처리 관련 함수
+    override protected void animationTransition() // 애니메이션 전이시 정보 처리 관련 함수
     {
         if (m_aniTransition.IsName("BaseAttack1 -> Idle") == true ||  // 기본으로 상태 전이될 경우
             m_aniTransition.IsName("BaseAttack2 -> Idle") == true ||
@@ -224,7 +203,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         }
     }
 
-    void initAnimatorInfo() // 애니메이터 정보를 초기화 (Idle로 전이 시 초기화 할 목적)
+    override protected void initAnimatorInfo() // 애니메이터 정보를 초기화 (Idle로 전이 시 초기화 할 목적)
     {
         m_animator.SetInteger("baseComboCount", 0); // 기본공격 콤보 횟수를 0으로 만듬
         m_animator.SetInteger("stateLevel", 0);     // 상태 레벨을 0으로 만듬
@@ -243,7 +222,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         SkillUIManager.instance.setDefulatSkillType();      // idle로 전이시 스킬표시를 디폴트로 복귀시킴
     }
 
-    void animationState() // 애니메이션 상태 도중 정보 처리 관련 함수
+    override protected void animationState() // 애니메이션 상태 도중 정보 처리 관련 함수
     {
         roll();       // 구르는 상태 처리
         flash(); // 대쉬공격 상태 처리 
@@ -254,7 +233,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         rush();
     }
 
-    void roll() // 구르는 상태 처리
+    override protected void roll() // 구르는 상태 처리
     {
         if(m_aniTransition.IsName("AnyState -> Roll") == true)
         {
@@ -313,8 +292,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         {
             m_playerRight.SetActive(true);
             m_mainRight.SetActive(false);
-            if (s_eventPlayerState != null)      // 델리게이트 체크
-                s_eventPlayerState(444);
+            delegateState(444);                         // 적에게 감지되지않는 델리게이트 전달
             m_leafAttackRangeEffect.Play();
         }
         else if (m_aniTransition.IsName("Hide -> Cut") == true)
@@ -349,8 +327,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         m_animator.SetBool("hide", false);
         m_playerRight.SetActive(false);
         m_mainRight.SetActive(true);
-        if (s_eventPlayerState != null)      // 델리게이트 체크
-            s_eventPlayerState(1004);
+        delegateState(1004);                         // 재감지 델리게이트 전달
     }
 
     public void leafAttack()
@@ -422,7 +399,9 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             if (m_fSwordWindTimer > 2.4f)
             {
                 m_animator.SetBool("swordWind",false);
+                m_animator.SetFloat("swordWindTimer", m_fSwordWindTimer);
                 m_fSwordWindTimer = 0.0f;
+
             }
             else
             {
@@ -453,7 +432,7 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         }
     }
 
-    void getCrowdContorl()      // 상태이상 처리
+    override protected void getCrowdContorl()      // 상태이상 처리
     {
         if(m_aniTransition.IsName("Revive -> Idle") == true || m_aniTransition.IsName("Stun -> Idle") == true)
         {
@@ -468,9 +447,9 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
         }
     }
 
-     ////////////////////////////////////////////////// 이벤트 처리 함수 ////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////// 이벤트 처리 함수 ////////////////////////////////////////////////////////////
 
-    public void hit(int type)
+    override protected void hit(int type)
     {
         m_weaponCollider.isTrigger = true;               // 무기 콜라이더 트리거 활성화
         if (m_aniState.IsName("MoveAttack") == true)
@@ -537,40 +516,13 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
             m_fCurAttackDamage = 2.0f;
             m_fAttackHoldTime = 0.1f;
             leafAttackEffect();
-            if (s_eventPlayerState != null)      // 델리게이트 체크
-                s_eventPlayerState(20);     // 20안에잇는 적 전체 타격
+            delegateState(20);                         // 20범위안의 적 타격
         }
         if(m_aniState.IsName("Cut") == true)
         {
-            m_fCurAttackDamage = -5.0f;
+            m_fCurAttackDamage = 4.0f;
             m_fAttackHoldTime = 0.2f;
             m_fTrailEffectTime = 1.0f;
-        }
-    }
-
-    public void attated(float damage, CROWD_CONTROL cc) // 피격 처리
-    {
-        float stateLevel = m_animator.GetInteger("stateLevel");
-        CharacterInfoManager.instance.m_iCurHp -= (int)damage;  // 받은 데미지만큼 현재 체력을 감소시킨다.                  
-
-        if (cc == CROWD_CONTROL.STUN)
-        {
-            if(stateLevel != 20)
-                 m_animator.SetInteger("stateLevel", 19);    // 스턴 상태로 레벨 전환
-        }
-        else if (cc == CROWD_CONTROL.DOWN)
-        {
-            if (stateLevel != 18)
-                m_animator.SetInteger("stateLevel", 17);    // 피격 상태로 레벨 전환
-        }
-
-        if (CharacterInfoManager.instance.m_iCurHp <= 0.0f)   // 체력이 없으면
-        {
-            GameManager.instance.playerDie();           // 플레이어가 사망했다고 게임매니저에 알림 (게임매니저에서 추가 UI 처리)
-            m_animator.SetTrigger("dieTrigger");        // 사망 트리거 활성화
-            m_animator.SetInteger("stateLevel", 44);    // 사망 상태로 레벨 전환
-            if (s_eventPlayerState != null)             // 델리게이트 체크
-                s_eventPlayerState(444);                // 플레이어가 사망했다고 적에게 알림
         }
     }
 
@@ -578,64 +530,6 @@ public class UnityChanInfomation : Player    // 캐릭터 정보를 담고 있�
     {
         m_fCameraRotate = 0.4f;
     }
-
-    private void OnTriggerEnter(Collider coll)                // 공격 충돌 처리
-    {
-        if (coll.gameObject.tag == "enemy")                   // 충돌 대상이 적 태그를 가지고 있으면
-        {
-            CROWD_CONTROL cc = CROWD_CONTROL.NONE;            // 특수 공격상태
-
-            int str = CharacterInfoManager.instance.m_iCurStr;
-            EnemyInfomation enemyScript = coll.GetComponentInParent<EnemyInfomation>();   // 적 스크립트를 받아와서
-
-            if (Vector3.Dot(coll.transform.forward, (transform.position - coll.transform.position).normalized) < Mathf.Cos(90 * Mathf.Deg2Rad))   // 내적을 구해서 적의 정면에서 90도내에 플레이어가 없으면 (좌우 합쳐 180도)
-                cc = CROWD_CONTROL.BACK_ATTACK;                                                                                                    // 백어택 발동
-            if (m_fCurAttackDamage * str < 0.0f)
-                enemyScript.attacted(-(m_fCurAttackDamage * str), cc);         // 그 적은 내 현재 공격모션의 데미지를 부여함
-            else
-                enemyScript.attacted(m_fCurAttackDamage * str, cc);         // 그 적은 내 현재 공격모션의 데미지를 부여함
-        }
-        if (coll.gameObject.tag == "Potal")                     // 충돌 대상이 스테이지를 넘어가는 포탈이면
-        {
-            if (s_eventPlayerState == null)
-                GameManager.instance.nextDungeonLoad();
-            else
-                GameManager.instance.stateExplain(1);
-        }
-        if (coll.gameObject.tag == "DropItem")                   // 충돌 대상이 아이템이면
-        {
-            DropItem dropItemScripte = coll.GetComponent<DropItem>();
-            m_itemManagerScript.putInventroyItem(dropItemScripte.getItenName()); // 인벤토리에 아이템을 넣음
-            ObjectPoolManager.Instance.PushToPool("DropItem", coll.gameObject);
-        }
-        if (coll.gameObject.tag == "DropGold")
-        {
-            DropGold dropGoldScripte = coll.GetComponent<DropGold>();
-            CharacterInfoManager.instance.m_characterInfo.m_iGold += coll.GetComponent<DropGold>().getGoldAmount();
-            m_profileUIManagerScript.changeGold();
-            ObjectPoolManager.Instance.PushToPool("DropGold", coll.gameObject);
-        }
-        if(coll.gameObject.tag == "Barrigate")
-        {
-           GameManager.instance.stateExplain(0);
-        }
-    }
-
-    public void levelUp()
-    {
-        m_levelUpEffect.Play();
-        GameManager.instance.levelUp();
-    }
-
-    public void revive()
-    {
-        m_levelUpEffect.Play();
-        m_animator.SetTrigger("revive");
-        CharacterInfoManager.instance.m_iCurHp = CharacterInfoManager.instance.m_characterInfo.m_iMaxHp;        // 체력 최대치
-        if (s_eventPlayerState != null)             // 델리게이트 체크
-            s_eventPlayerState(1004);              // 플레이어가 부활했다고 적에게 알림
-    }
-
 }
 
 

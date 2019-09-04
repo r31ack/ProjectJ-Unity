@@ -15,7 +15,6 @@ public class MinotaurKingInfomation : EnemyInfomation
     {
         m_fMaxHP = 3000;
         m_fCurHP = m_fMaxHP;
-        //m_targetTransform = GameObject.Find("Player").transform;
         m_fShoutRange = transform.Find("ShoutRange").GetComponent<ParticleSystem>();
         m_earthquakeEffect = transform.Find("EarthquakeEffect").GetComponent<ParticleSystem>();
         m_earthquakeRange = transform.Find("EarthquakeRange");
@@ -123,7 +122,7 @@ public class MinotaurKingInfomation : EnemyInfomation
         {
             if (Vector3.Distance(m_targetTransform.position, transform.position) < 20)   // 콜라이더를 쓰지 않고 반경 20거리 전범위 스턴 공격
             {
-                m_targetTransform.GetComponent<UnityChanInfomation>().attated(1, CROWD_CONTROL.STUN);
+                m_targetTransform.GetComponent<PlayerState>().attated(1, CROWD_CONTROL.STUN);
             }
         }
         if (m_aniState.IsName("Shout") == true || m_aniState.IsName("BaseAttack1")==true ||
@@ -154,16 +153,23 @@ public class MinotaurKingInfomation : EnemyInfomation
         }
     }
 
-    public override void attacted(float damage, CROWD_CONTROL cc = CROWD_CONTROL.NONE)
+    public override void attacted(float damage, SPECIAL_DAMAGE sd = SPECIAL_DAMAGE.NONE, CROWD_CONTROL cc = CROWD_CONTROL.NONE)
     {
+        if (sd == SPECIAL_DAMAGE.CRITICAL)
+            damage *= 1.25f;                                  // 크리티컬 증폭 계수 25%
+        else if (sd == SPECIAL_DAMAGE.BACK_ATTACK)
+            damage *= 1.1f;                                   // 백어택 증폭 계수 10%
+        else if (sd == SPECIAL_DAMAGE.CRITICAL_BACK_ATTACK)
+            damage *= 1.375f;                                 // 크리티컬 백어택 증폭 계수 복리 25*10%
+
         int stateLevel = m_animator.GetInteger("stateLevel");                 // 상태 레벨을 받아옴
         if (stateLevel == (int)ENEMY_STATE.DIE)                                // 사망 상태이면 리턴
             return;
-
         m_fCurHP -= damage;                                                   // 체력 감소    
         if (cc == CROWD_CONTROL.STUN)
             cc = CROWD_CONTROL.STUN_IMMUNE;
-        DamageTextVisible((int)damage, cc);
+        DamageTextVisible((int)damage, sd, cc);
+
         InGameUIManager.Instance.showEnemyInfo("미노 킹", percentHP);    // 체력 상태를 UI에 전달
         GameManager.instance.addScore((int)damage);
         ScoreUIManager.Instance.replaceScroeUI();         // 스코어UI를 갱신
@@ -247,7 +253,7 @@ public class MinotaurKingInfomation : EnemyInfomation
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.tag == "player")
             {
-                m_targetTransform.GetComponent<UnityChanInfomation>().attated(30,CROWD_CONTROL.DOWN);
+                m_targetTransform.GetComponent<PlayerState>().attated(30,CROWD_CONTROL.DOWN);
             }
         }
     }

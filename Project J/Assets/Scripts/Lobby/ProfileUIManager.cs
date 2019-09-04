@@ -11,7 +11,7 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
     private UISlider m_expPercdentSlider;               
     private UILabel m_jamCountText;                      // 보석량
     private UILabel m_goldCountText;                     // 골드량
-    private AllCharacterInfo m_characterInfomation;   // 캐릭터 정보를 받아온다.
+    private AllPlayerInfo m_characterInfomation;   // 캐릭터 정보를 받아온다.
 
     private UILabel m_infomationText;                    // 캐릭터 정보창 활성화 시의 모든 데이터정보 텍스트
     private UILabel m_statusText;                        // 스텟 정보 텍스트
@@ -35,7 +35,7 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
 
     void Start()
     {
-        m_characterInfomation = CharacterInfoManager.instance.m_characterInfo;   // 캐릭터 정보를 받아온다.
+        m_characterInfomation = CharacterInfoManager.instance.m_playerInfo;   // 캐릭터 정보를 받아온다.
         m_UserNameText.text = m_characterInfomation.m_strUserName;                  // 유저 닉네임 표시
         m_LevelText.text = m_characterInfomation.m_iLevel.ToString();
         m_expPercdentSlider.value = ((float)m_characterInfomation.m_iCurExp / (float)m_characterInfomation.m_iMaxExp);
@@ -68,6 +68,9 @@ public class ProfileUIManager : Singleton<ProfileUIManager>
 
     public void changeStatus()
     {
+        m_infomationText.text = m_characterInfomation.m_strUserName + "\n\n" + m_strCharacterName + "\n\n" + m_characterInfomation.m_iLevel.ToString() + "\n\n" +
+            m_characterInfomation.m_iCurExp.ToString() + "/" + m_characterInfomation.m_iMaxExp.ToString() + "\n\n" + m_characterInfomation.m_iMaxHp.ToString();
+
         m_LevelText.text = m_characterInfomation.m_iLevel.ToString();
         m_statusText.text = m_characterInfomation.m_iStr.ToString() + " (+" + m_characterInfomation.m_iWeaponStr.ToString() + ")\n\n" +
         m_characterInfomation.m_iDef.ToString() + " (+" + m_characterInfomation.m_iArmorDef.ToString() + ")";

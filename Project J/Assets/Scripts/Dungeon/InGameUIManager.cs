@@ -11,7 +11,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
     public UISprite sprKnob;   // 컨트롤러 방향 손잡이 이미지
     private UILabel m_chargeLevelLabel;
 
-    private UnityChanInfomation m_unityChanInfo;                     // 유니티짱의 데이터 정보를 가지고 있는 스크립트
+    private AkazaState m_unityChanInfo;                              // 유니티짱의 데이터 정보를 가지고 있는 스크립트
     private Vector2 m_vec2KnobCenterPos = new Vector2(-530, -250);   // 조이스틱 손잡이 중심 좌표
     private Vector2 m_vec2KnobNormalPos;                             // 조이스틱 손잡이 노말 벡터 (손잡이가 꺾인 방향을 알기 위해)
     private float m_fKnobAngle;                                      // 조이스틱 중심 위치로부터 손잡이까지의 각도
@@ -56,7 +56,7 @@ public class InGameUIManager : Singleton<InGameUIManager>
     // Start is called before the first frame update
     void Start()
     {
-        m_unityChanInfo = GameObject.Find("Player").GetComponent<UnityChanInfomation>();  // 유니티짱의 데이터 정보를 가지고 있는 스크립트와 연결
+        m_unityChanInfo = GameObject.Find("Player").GetComponent<AkazaState>();  // 상태 데이터 정보를 가지고 있는 스크립트와 연결
     }
 
     // Update is called once per frame

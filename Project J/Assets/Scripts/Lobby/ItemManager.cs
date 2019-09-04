@@ -10,7 +10,7 @@ public enum ITEM_TYPE  // 아이템 종류
     POTION,    // 포션
 }
 
-public class ItemManager : MonoBehaviour
+public class ItemManager : Singleton<ItemManager>
 {
     private Dictionary<string, DefaultItemInfo> m_dicDefaultItemInfo = new Dictionary<string, DefaultItemInfo>(); // 아이템 고유 정보를 가진 딕셔너리
     private Dictionary<string, ShopItemInfo> m_dicIShoptemInfo = new Dictionary<string, ShopItemInfo>(); // 상점 아이템의 정보를 가진 딕셔너리
@@ -63,7 +63,7 @@ public class ItemManager : MonoBehaviour
         explainItem();      // 설명창 활성화 확인
         ItemClick();
 
-        if(Input.GetKeyDown(KeyCode.F12))   // 임시 저장
+        if(Input.GetKeyDown(KeyCode.F11))   // 임시 저장
         {
             DataManager.instance.saveUserInfo(GameManager.instance.m_iSelectCharacterIndex);
         }
@@ -75,25 +75,25 @@ public class ItemManager : MonoBehaviour
         {
             if (m_armorSlot.transform.childCount != 0)  // 자식 갯수가 0이 아니면
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iArmorDef = getValue(m_armorSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
+                CharacterInfoManager.instance.m_playerInfo.m_iArmorDef = getValue(m_armorSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
                 CharacterInfoManager.instance.replaceStr();
                 ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             else
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iArmorDef = 0;
+                CharacterInfoManager.instance.m_playerInfo.m_iArmorDef = 0;
                 CharacterInfoManager.instance.replaceStr();
                 ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             if (m_weaponSlot.transform.childCount != 0)  // 자식 갯수가 0이 아니면
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_weaponSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
+                CharacterInfoManager.instance.m_playerInfo.m_iWeaponStr = getValue(m_weaponSlot.transform.GetChild(0).GetComponent<UIButton>().normalSprite);
                 CharacterInfoManager.instance.replaceStr();
                 ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
             else
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = 0;
+                CharacterInfoManager.instance.m_playerInfo.m_iWeaponStr = 0;
                 CharacterInfoManager.instance.replaceStr();
                 ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
             }
@@ -254,9 +254,9 @@ public class ItemManager : MonoBehaviour
         {
             int buyGold = m_dicDefaultItemInfo[m_clickShopItem.normalSprite].m_iBuyGold;           // 상점 아이템의 구매 가격
 
-            if (CharacterInfoManager.instance.m_characterInfo.m_iGold > buyGold)                   // 내가 가진 돈이 구매가격보다 크면
+            if (CharacterInfoManager.instance.m_playerInfo.m_iGold > buyGold)                   // 내가 가진 돈이 구매가격보다 크면
             {
-                CharacterInfoManager.instance.m_characterInfo.m_iGold -= buyGold;                  // 내 골드 정보에서 구매 가격을 뺀다.
+                CharacterInfoManager.instance.m_playerInfo.m_iGold -= buyGold;                  // 내 골드 정보에서 구매 가격을 뺀다.
                 putInventroyItem(m_clickShopItem.normalSprite);                                    // 클릭한 상점 아이템을 인벤토리에 넣는다.
                 ProfileUIManager.Instance.changeGold();                                                    // 구매할때의 골드 변화 적용
             }
@@ -322,7 +322,7 @@ public class ItemManager : MonoBehaviour
                 {
                     m_clickInventoryItem.transform.parent = m_weaponSlot.transform;             // 입음
                     m_clickInventoryItem.transform.position = m_weaponSlot.transform.position;  // 위치 동기화
-                    CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
+                    CharacterInfoManager.instance.m_playerInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
                     CharacterInfoManager.instance.replaceStr();
                     ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
                     m_clickInventoryItem = null;
@@ -334,7 +334,7 @@ public class ItemManager : MonoBehaviour
                 {
                     m_clickInventoryItem.transform.parent = m_armorSlot.transform;             // 입음
                     m_clickInventoryItem.transform.position = m_armorSlot.transform.position;  // 위치 동기화
-                    CharacterInfoManager.instance.m_characterInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
+                    CharacterInfoManager.instance.m_playerInfo.m_iWeaponStr = getValue(m_clickInventoryItem.normalSprite);
                     CharacterInfoManager.instance.replaceStr();
                     ProfileUIManager.Instance.changeStatus();       // 스텟 변화 적용
                     m_clickInventoryItem = null;
@@ -355,7 +355,7 @@ public class ItemManager : MonoBehaviour
             if (m_clickInventoryItem != null)
             {
                 int saleGoldCount = getBuyGold(m_clickInventoryItem.normalSprite);               // 클릭한 아이템 구매 가격을 받아와 플레이어 골드 상승
-                CharacterInfoManager.instance.m_characterInfo.m_iGold += saleGoldCount;          // 캐릭터 정보에 골드량을 증가시킨다.
+                CharacterInfoManager.instance.m_playerInfo.m_iGold += saleGoldCount;          // 캐릭터 정보에 골드량을 증가시킨다.
                 GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>().changeGold();      // UI에 골드량을 바꾼다.
                 m_lnkLstInventoryItemButton.Remove(m_clickInventoryItem);
                 Destroy(m_clickInventoryItem.gameObject);                                        // 아이템 삭제

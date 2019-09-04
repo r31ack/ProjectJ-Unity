@@ -34,14 +34,27 @@ public class ShopItemInfo    // 상점에 있는 아이템 정보, key : 아이�
     public int m_iBuyGold;   // 구매 가격
 }
 
+public class DefaultSkillInfo           // key : 스킬명
+{
+    public string m_strImageName;       // 스킬 아이콘 이름
+    public float m_fCoolTime;           // 쿨타임
+    public float m_fDamageRatio;        // 데미지 배율  
+    public float m_fHoldTime;           // 유지시간
+    public int m_iRange;                // 범위
+    public int m_iGetLevel;             // 습득 레벨
+}
+
 public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 내보내기 할 필요가 없는 디폴트 정보를 담은 데이터 Load파일 관리 클래스
 {
     private Dictionary<CHARACTER_TYPE, DefaultCharacterInfo> m_dicDefaultCharacterInfo = new Dictionary<CHARACTER_TYPE, DefaultCharacterInfo>();   // 기본 캐릭터 스텟과 상승스텟 관련 정보
-    private Dictionary<string, ShopItemInfo> m_dicShopItemInfo = new Dictionary<string, ShopItemInfo>();        // 상점 아이템 정보
-    public Dictionary<string, DefaultItemInfo> m_dicDefaultItemInfo = new Dictionary<string, DefaultItemInfo>();                    // 아이템 고유 정보
+    private Dictionary<string, ShopItemInfo> m_dicShopItemInfo = new Dictionary<string, ShopItemInfo>();               // 상점 아이템 정보
+    public Dictionary<string, DefaultItemInfo> m_dicDefaultItemInfo = new Dictionary<string, DefaultItemInfo>();       // 아이템 고유 정보
+    private Dictionary<string, DefaultSkillInfo> m_dicDefaultSkillInfo = new Dictionary<string, DefaultSkillInfo>();   // 디폴트 스킬 정보
+
     private bool m_bloadShopItemInfoState = false;
     private bool m_bloadItemInfoState = false;
     private bool m_bloadDefulatCharacterInfoState = false;
+    private bool m_bloadDefulatSkillInfoState = false;
 
     void Awake()
     {
@@ -96,23 +109,22 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
     {
         if (m_bloadItemInfoState == false)
         {
-            TextAsset text = Resources.Load<TextAsset>("Data/DefaultItemInfo");        // 리소스 로드를 통해 테이블을 로드한다.
-            string content = text.text;                                     // content안에는 1줄로 데이터가 쭉 나열되어 있다.
-            string[] line = content.Split('\n');                            // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
-
-            for (int i = 2; i < line.Length - 1; i++)      // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+            TextAsset text = Resources.Load<TextAsset>("Data/DefaultItemInfo");  // 리소스 로드를 통해 테이블을 로드한다.
+            string content = text.text;                                          // 한라인으로 데이터가 나열되어 있다.
+            string[] line = content.Split('\n');                                 // '\n' 기준으로 분리해서 line배열에 대입
+            for (int i = 2; i < line.Length - 1; i++)                            // 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
             {
-                string[] column = line[i].Split(',');                     // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
-                DefaultItemInfo table = new DefaultItemInfo();                          // SCV순서와 구조체 데이터 형식이 일치하여야 함
-                int index = 0;                                            // 0번째 열부터 시작
+                string[] column = line[i].Split(',');                            // 쉼표로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
+                DefaultItemInfo table = new DefaultItemInfo();                   // 디폴트 테이블 정보를 담을 변수 생성
+                int index = 0;                                                   // 0번째 열부터 시작
 
-                string itemName = column[index++].Replace("\r", ""); // 저장 후 인덱스를 계속 증가시켜 읽는다.
-                table.m_strName = column[index++].Replace("\r", ""); // 0
-                table.m_strExplain = column[index++].Replace("\r", ""); // 0
+                string itemName = column[index++].Replace("\r", "");             // 저장 후 인덱스를 계속 증가시켜 읽는다.
+                table.m_strName = column[index++].Replace("\r", "");         
+                table.m_strExplain = column[index++].Replace("\r", "");          
                 table.m_eType = (ITEM_TYPE)int.Parse(column[index++]);
                 table.m_iValue = int.Parse(column[index++]);
                 table.m_iBuyGold = int.Parse(column[index++]);
-                m_dicDefaultItemInfo.Add(itemName, table);          // 딕셔너리에 테이블 생성정보 삽입
+                m_dicDefaultItemInfo.Add(itemName, table);                      // 딕셔너리에 테이블 생성정보 삽입
             }
             m_bloadItemInfoState = true;
         }
@@ -125,14 +137,14 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
         {
             Debug.Log("CSV 파일 상점 판매 아이템 정보 불러오기");
             TextAsset text = Resources.Load<TextAsset>("Data/ShopItemInfo");  // 리소스 로드를 통해 테이블을 로드한다.
-            string content = text.text;                                      // content안에는 1줄로 데이터가 쭉 나열되어 있다.
-            string[] line = content.Split('\n');                             // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
-            for (int i = 2; i < line.Length - 1; i++)                        // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+            string content = text.text;                                       // 한라인으로 데이터가 나열되어 있다.
+            string[] line = content.Split('\n');                              // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
+            for (int i = 2; i < line.Length - 1; i++)                         // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
             {
-                string[] column = line[i].Split(',');                        // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
-                ShopItemInfo table = new ShopItemInfo();                     // SCV순서와 구조체 데이터 형식이 일치하여야 함
-                string key = null;                                           // key값이 될 문자열의 닉네임 보관장소
-                int index = 0;                                              // 0번째 열부터 시작
+                string[] column = line[i].Split(',');                         // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
+                ShopItemInfo table = new ShopItemInfo();                      // SCV순서와 구조체 데이터 형식이 일치하여야 함
+                string key = null;                                            // key값이 될 문자열의 닉네임 보관장소
+                int index = 0;                                                // 0번째 열부터 시작
 
                 key = column[index++].Replace("\r", "");
                 table.m_eType = (ITEM_TYPE)int.Parse(column[index++]);
@@ -142,5 +154,38 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
             m_bloadShopItemInfoState = true;                                // 상점 정보를 로드한 상태로 변경
         }
         return m_dicShopItemInfo;                                           // 상점 아이템 정보 반환
+    }
+
+    public Dictionary<string, DefaultSkillInfo> loadDefaultSkillInfo(CHARACTER_TYPE characterType)
+    {
+        if (m_bloadDefulatSkillInfoState == false)                                 // 스킬정보 로드 이력이 없으면 CSV파일에서 불러온다.
+        {
+            Debug.Log("CSV 디폴트 스킬 정보 불러오기");
+            TextAsset textAsset = new TextAsset();
+            if (characterType == CHARACTER_TYPE.AKAZA)
+                textAsset = Resources.Load<TextAsset>("Data/AkazaSkillInfo");      // 리소스 로드를 통해 테이블을 로드한다.
+            if (characterType == CHARACTER_TYPE.UNITY)
+                textAsset = Resources.Load<TextAsset>("Data/UnityChanSkillInfo");  // 리소스 로드를 통해 테이블을 로드한다.
+            string content = textAsset.text;                                       // 한라인으로 데이터가 나열되어 있다.
+
+            string[] line = content.Split('\n');                              // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
+            for (int i = 2; i < line.Length - 1; i++)                         // 0 ~ 1번 라인은 테이블 타입 구분 용도로 사용한다. 2번째 라인부터 라인 갯수만큼 테이블 생성 (마지막NULL 한칸 제외해서 -1라인)
+            {
+                string[] column = line[i].Split(',');                         // 열의 정보값을 ','로 구분해 column배열에 넣는다. SCV파일은 ,로 구분되어 있으므로
+                DefaultSkillInfo table = new DefaultSkillInfo();              // SCV순서와 구조체 데이터 형식이 일치하여야 함
+                string key = null;                                            // key값이 될 문자열의 닉네임 보관장소
+                int index = 0;                                                // 0번째 열부터 시작
+
+                key = column[index++].Replace("\r", "");                      // 키값(스킬명) 저장
+                table.m_strImageName = column[index++].Replace("\r", "");     // 스킬 아이콘 이미지
+                table.m_fCoolTime = float.Parse(column[index++]);             // 쿨타임
+                table.m_fDamageRatio = float.Parse(column[index++]);          // 데미지 배율
+                table.m_fHoldTime = float.Parse(column[index++]);             // 공격판정 유지시간
+                table.m_iGetLevel = int.Parse(column[index++]);               // 습득 레벨
+                m_dicDefaultSkillInfo.Add(key, table);
+            }
+            m_bloadDefulatSkillInfoState = true;                                // 상점 정보를 로드한 상태로 변경
+        }
+        return m_dicDefaultSkillInfo;                                           // 상점 아이템 정보 반환
     }
 }

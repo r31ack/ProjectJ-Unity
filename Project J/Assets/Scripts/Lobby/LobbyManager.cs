@@ -9,7 +9,7 @@ public class LobbyManager : MonoBehaviour
     GameObject m_shopMenu;                        // 상점 창 최상위 부모 오브젝트
     GameObject m_inventoryMenu;                   // 인벤토리 창 최상위 부모 오브젝트
     GameObject m_optionMenu;                      // 옵션 창 최상의 부모 오브젝트
-    private AllCharacterInfo m_characterInfomation;   // 캐릭터 정보를 받아온다.
+    private AllPlayerInfo m_characterInfomation;   // 캐릭터 정보를 받아온다.
     private UILabel m_dynamicButtonLabel;                  // 열은 창에 맞게 착용하기, 버리기, 판매하기 등으로 바뀌는 기능
 
     void Awake()
@@ -21,7 +21,7 @@ public class LobbyManager : MonoBehaviour
     }
     void Start()
     {
-        m_characterInfomation = CharacterInfoManager.instance.m_characterInfo;   // 캐릭터 정보를 받아온다.
+        m_characterInfomation = CharacterInfoManager.instance.m_playerInfo;   // 캐릭터 정보를 받아온다.
 
         m_characterInfomationMenu = GameObject.Find("ItemWindow").transform.Find("InfomationUI").gameObject;
         m_shopMenu = GameObject.Find("ItemWindow").transform.Find("ShopUI").gameObject;

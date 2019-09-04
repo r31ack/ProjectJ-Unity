@@ -27,7 +27,7 @@ public class SkillUIManager : MonoSingleton<SkillUIManager>
 
     private void Awake()
     {
-        List<DefaultSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDefaultSkillInfo;
+        List<DynamicSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDynamicSkillInfo;
         m_iSkillMaxCount = 6;
 
         m_grid = GetComponent<UIGrid>();
@@ -82,7 +82,7 @@ public class SkillUIManager : MonoSingleton<SkillUIManager>
     {
         while (true)
         {
-            List<DefaultSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDefaultSkillInfo;
+            List<DynamicSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDynamicSkillInfo;
             for (int i = 0; i < m_iSkillMaxCount; i++)
             {
                 float coolTime = skillInfo[i].m_fCurCoolTime;
@@ -128,7 +128,7 @@ public class SkillUIManager : MonoSingleton<SkillUIManager>
 
     public void setSkillType(int numberPad, SKILL_TYPE skillType)  // 스킬 타입을 동적으로 세팅한다. (매개변수 1. 스킬 패드번호, 2. 스킬 종류)
     {
-        List<DefaultSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDefaultSkillInfo;
+        List<DynamicSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDynamicSkillInfo;
 
         // 스킬 타입을 바꾸고 
         m_eCurSkillType[numberPad - 1] = skillType;
@@ -154,7 +154,7 @@ public class SkillUIManager : MonoSingleton<SkillUIManager>
 
     void buttonUpdate(int index, SKILL_TYPE skillType)                  // 해당 인덱스에 맞는 스킬 타입별 쿨타임 동적 업데이트
     {
-        List<DefaultSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDefaultSkillInfo;
+        List<DynamicSkillInfo> skillInfo = CharacterInfoManager.instance.m_arrLstDynamicSkillInfo;
 
         float coolTime = skillInfo[(int)skillType].m_fCurCoolTime;
         float coolTimePercent = skillInfo[(int)skillType].m_fCurCoolTime / skillInfo[(int)skillType].m_fMaxCoolTime;

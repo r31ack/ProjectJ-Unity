@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class BulletMove : MonoBehaviour
+public class SwordWindMove : MonoBehaviour
 {
     public float lifeTime;
     public string poolItemName = "swordWind";

@@ -58,8 +58,8 @@ public class RankingUIManager : Singleton<RankingUIManager>
 
 
         // 플레이어의 랭크 정보를 로드함 
-        string userName = CharacterInfoManager.instance.m_characterInfo.m_strUserName;
-        RankingInfo playerInfo = new RankingInfo(userName, (int)CharacterInfoManager.instance.m_characterInfo.m_eCharacterType, GameManager.instance.m_iScore, GameManager.instance.m_iClearTime);
+        string userName = CharacterInfoManager.instance.m_playerInfo.m_strUserName;
+        RankingInfo playerInfo = new RankingInfo(userName, (int)CharacterInfoManager.instance.m_playerInfo.m_eCharacterType, GameManager.instance.m_iScore, GameManager.instance.m_iClearTime);
 
         if (m_dicRankingInfo.ContainsKey(userName) == true)   // 이미 유저네임이 있으면
         {

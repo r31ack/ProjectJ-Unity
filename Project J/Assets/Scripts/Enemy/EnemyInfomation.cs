@@ -13,8 +13,9 @@ public enum CROWD_CONTROL
     BACK_ATTACK,
 }
 
-public enum SPECIAL_ATTACK
+public enum SPECIAL_DAMAGE  // 특수 데미지
 {
+    NONE,
     CRITICAL,               // 크리티컬
     BACK_ATTACK,            // 백어택
     CRITICAL_BACK_ATTACK,   // 크리티컬 백어택
@@ -35,39 +36,42 @@ public enum ENEMY_STATE   // 기본 적의 AI 상태 (아래로 갈수록 높은
 
 public class EnemyInfomation : Enemy
 {
-    private Camera m_uiCamera;              // UI 카메라
+    protected Camera m_uiCamera;              // UI 카메라
+    protected float attackDistance = 3.0f;
 
-    public float idleHoldTime = 5.0f;            // 대기 시간
-    public float patrolHoldTime = 5.0f;          // 순찰 시간
-    public float followHoldTime = 5.0f;          // 피격시 쫓아오는 시간
-    public float attackDistance = 3.0f;
-
-    private float m_fIdleTimer;                  // 대기 타이머
-    private float m_fPatrolTimer;                // 순찰 유지 타이머
-    private float m_fFollowTargetTimer;          // 피격시 쫓아오는 타이머 
+    protected float idleHoldTime = 5.0f;            // 대기 시간
+    protected float patrolHoldTime = 5.0f;          // 순찰 시간
+    protected float followHoldTime = 5.0f;          // 피격시 쫓아오는 시간
+    protected float m_fIdleTimer;                  // 대기 타이머
+    protected float m_fPatrolTimer;                // 순찰 유지 타이머
+    protected float m_fFollowTargetTimer;          // 피격시 쫓아오는 타이머 
 
     protected NavMeshAgent m_agent;                          // 네비메시 에이전트 
-    private Vector3 m_spawnPosition;                       // 생성된 위치
+    protected Vector3 m_spawnPosition;                       // 생성된 위치
     protected float m_fSpawnDistance;                        // 생성된 위치와의 거리차
-    private Vector3 m_patrolPosition;                      // 순찰하려는 위치
+    protected Vector3 m_patrolPosition;                      // 순찰하려는 위치
     protected ENEMY_STATE m_eEnemyState = ENEMY_STATE.IDLE;  // 적의 상태
 
-    protected Collider m_punchCollider;       // 공격판정 콜라이더
-    private Transform m_playerTransform;
-    UnityChanInfomation unityChanScripte;
-    private Transform m_sunTransform;
+    protected Collider m_punchCollider;                       // 공격판정 콜라이더
+    protected Transform m_playerTransform;
+    protected PlayerState unityChanScripte;
+    protected Transform m_sunTransform;
 
-    private float m_fCoroutineTime = 0.1f;    // 코루틴 주기
+    protected float m_fCoroutineTime = 0.1f;    // 코루틴 주기
+
+    protected float patrolSpeed = 3.0f;
+    protected float detectionSpeed = 10.0f;
+    protected float returnSpeed = 50.0f;
 
     void Awake()
     {
         m_fMaxHP = 300;
         m_fCurHP = m_fMaxHP;
+        m_iGetExp = 10;
 
         m_fIdleTimer = idleHoldTime;                   
         m_fPatrolTimer = patrolHoldTime;           
         m_fFollowTargetTimer = followHoldTime;
-        m_iGetExp = 10;
     }
 
     void Start()
@@ -76,7 +80,7 @@ public class EnemyInfomation : Enemy
 
         m_animator = GetComponent<Animator>();
         m_playerTransform = GameObject.Find("Player").GetComponent<Transform>();
-        unityChanScripte = m_playerTransform.GetComponent<UnityChanInfomation>();
+        unityChanScripte = m_playerTransform.GetComponent<PlayerState>();
 
         m_sunTransform = GameObject.Find("Directional Light").GetComponent<Transform>();
         m_targetTransform = m_playerTransform;
@@ -234,38 +238,38 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
     {
         switch (m_eEnemyState)
         {
-        case ENEMY_STATE.IDLE:       // 대기
-            m_agent.destination = transform.position;  // 이동 정지
+        case ENEMY_STATE.IDLE:                           // 대기
+            m_agent.SetDestination(transform.position);  // 이동 정지
             m_agent.speed = 0;
-            m_fIdleTimer = idleHoldTime;
+            m_fIdleTimer = idleHoldTime;                 // 대기 유지시간 설정
             break;
-        case ENEMY_STATE.PATROL:     // 순찰
-            float randomX = Random.Range(0f, 30f);                 // x랜덤생성 0~100
-            float randomZ = Random.Range(0f, 30f);                 // z랜덤생성 0~100
-            m_patrolPosition = m_spawnPosition + new Vector3(randomX, 0, randomZ);      // 정찰 위치 지정 (생성 위치를 기준으로 100,0,100거리)
-            m_agent.SetDestination(m_patrolPosition);           // 공격 목표 타겟으로 
-            m_agent.speed = 3;                                  // 3의 속도로 이동
-            m_fPatrolTimer = patrolHoldTime;
+        case ENEMY_STATE.PATROL:                                                     // 순찰
+            float randomX = Random.Range(0f, 30f);                                   // x랜덤생성 0~30
+            float randomZ = Random.Range(0f, 30f);                                   // z랜덤생성 0~30
+            m_patrolPosition = m_spawnPosition + new Vector3(randomX, 0, randomZ);   // 정찰 위치 지정 (생성 위치를 기준으로 30,0,30거리)
+            m_agent.SetDestination(m_patrolPosition);                                // 순찰 목표를 지정 
+            m_agent.speed = patrolSpeed;                                             // 순찰 속도로 이동
+            m_fPatrolTimer = patrolHoldTime;                                         // 순찰 유지시간 설정
             break;
-        case ENEMY_STATE.DETECTION:   // 감지
+        case ENEMY_STATE.DETECTION:                              // 감지
             m_agent.SetDestination(m_targetTransform.position);  // 공격 목표 타겟으로 
-            m_agent.speed = 10;                                  // 10의 속도로 이동
+            m_agent.speed = detectionSpeed;                      // 감지 속도로 이동
             break;
-        case ENEMY_STATE.RETURN:      // 위치 복귀
-            m_agent.SetDestination(m_spawnPosition);        // 공격 목표 타겟으로 
-            m_agent.speed = 50;                             // 50의 속도로 복귀
+        case ENEMY_STATE.RETURN:                            // 위치 복귀
+            m_agent.SetDestination(m_spawnPosition);        // 초기 생성된 위치
+            m_agent.speed = returnSpeed;                    // 복귀 속도
             break;
-        case ENEMY_STATE.GET_DAMAGE:  // 피격 
+        case ENEMY_STATE.GET_DAMAGE:                             // 피격상태
             m_agent.SetDestination(m_targetTransform.position);  // 공격 목표 타겟으로 
-            m_agent.speed = 10;                                  // 10의 속도로 이동
-            m_fFollowTargetTimer = followHoldTime;
+            m_agent.speed = detectionSpeed;                      // 감지 속도로 이동
+            m_fFollowTargetTimer = followHoldTime;               // 공격자를 쫓아가는 시간
             break;
-        case ENEMY_STATE.BASE_ATTACK: // 기본공격
-            transform.LookAt(m_targetTransform);        // 타겟을 정확히 바라보고
-            m_agent.SetDestination(transform.position); // 타겟을 자기자신으로 하여 
-            m_agent.speed = 0;                                // 이동을 멈추고
+        case ENEMY_STATE.BASE_ATTACK:                   // 기본공격
             m_animator.SetTrigger("baseAttackTrigger");                  // attack 트리거 발동
             m_animator.SetInteger("baseAttackType", Random.Range(1, 4)); //1~3의 공격중 하나 발동
+            transform.LookAt(m_targetTransform);        // 타겟을 정확히 바라보고
+            m_agent.SetDestination(transform.position); // 타겟을 자기자신으로 하여 
+            m_agent.speed = 0;                          // 이동을 멈추고
             break;
         case ENEMY_STATE.SKILL: // 스킬
             m_agent.SetDestination(transform.position); // 타겟을 자기자신으로 하여 
@@ -298,20 +302,27 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
         }
     }
 
-    public virtual void attacted(float damage, CROWD_CONTROL cc = CROWD_CONTROL.NONE)
+    public virtual void attacted(float damage, SPECIAL_DAMAGE sd = SPECIAL_DAMAGE.NONE, CROWD_CONTROL cc = CROWD_CONTROL.NONE)
     {
+        if (sd == SPECIAL_DAMAGE.CRITICAL)
+            damage *= 1.25f;                                  // 크리티컬 증폭 계수 25%
+        else if (sd == SPECIAL_DAMAGE.BACK_ATTACK) 
+            damage *= 1.1f;                                   // 백어택 증폭 계수 10%
+        else if(sd == SPECIAL_DAMAGE.CRITICAL_BACK_ATTACK)
+            damage *= 1.375f;                                 // 크리티컬 백어택 증폭 계수 복리 25*10%
+
         int stateLevel = m_animator.GetInteger("stateLevel");                 // 상태 레벨을 받아옴
         if (stateLevel == (int)ENEMY_STATE.DIE)                                // 사망 상태이면 리턴
             return;
         m_fCurHP -= damage;                                                   // 체력 감소    
-        DamageTextVisible((int)damage, cc);
+        DamageTextVisible((int)damage, sd, cc);
         InGameUIManager.Instance.showEnemyInfo("미노타우루스", percentHP);    // 체력 상태를 UI에 전달
         GameManager.instance.addScore((int)damage);
         ScoreUIManager.Instance.replaceScroeUI();         // 스코어UI를 갱신
 
         if (m_fCurHP <= 0.0f && stateLevel != (int)ENEMY_STATE.DIE)           // 체력이 0보다 작고 사망상태가 아니면
         {
-            CharacterInfoManager.instance.m_characterInfo.m_iCurExp += m_iGetExp;
+            CharacterInfoManager.instance.m_playerInfo.m_iCurExp += m_iGetExp;
             if (CharacterInfoManager.instance.levelUpCheck() == true)
                 unityChanScripte.levelUp();
             ProfileUIManager.Instance.changeStatus();
@@ -374,7 +385,7 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
     void OnEnable()     // 스크립트 활성화 이벤트 
     {
         GameManager.instance.m_iEnemyCount++;                       // 적의 카운트를 늘리고
-        UnityChanInfomation.s_eventPlayerState += this.playerState; // 플레이어와 델리게이트 연결
+        PlayerState.s_eventPlayerState += this.playerState; // 플레이어와 델리게이트 연결
     }
 
     void OnDisable()    // 스크립트 비활성화 이벤트 (적은 게임 도중에 사망이 아니면 스크립트가 비활성화될 일이 없음)
@@ -382,7 +393,7 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
         GameManager.instance.m_iEnemyCount--;                       // 적의 카운트를 1 줄임
         if (GameManager.instance.m_iEnemyCount == 0)                // 적의 카운트가 없으면
             GameManager.instance.clearDungeon();                    // 해당 던전은 적이 없다고 게임매니저에게 알림
-        UnityChanInfomation.s_eventPlayerState -= this.playerState; // 플레이어와 델리게이트 연결해제
+        PlayerState.s_eventPlayerState -= this.playerState; // 플레이어와 델리게이트 연결해제
     }
 
     void playerState(int state)
@@ -396,24 +407,32 @@ private void timerStateTransition()           // 타이머가 지난 후 전이 
         if(state > 10 && state < 50)                // state값이 10보다 크고 50보다 작으면 범위로 사용할 예정
         {
             if (m_fTargetDistance < state)          // 타겟과의 거리가 넘어온 인자보다 낮으면
-                attacted(CharacterInfoManager.instance.m_iCurStr * 0.8f, CROWD_CONTROL.STUN);   // 0.8배율의 데미지를 주고 스턴상태로 만듬
+                attacted(CharacterInfoManager.instance.m_iCurStr * 0.8f, SPECIAL_DAMAGE.NONE, CROWD_CONTROL.STUN);   // 0.8배율의 데미지를 주고 스턴상태로 만듬
         }
     }
 
-    protected void DamageTextVisible(int damageAmount, CROWD_CONTROL cc=CROWD_CONTROL.NONE)
+    protected void DamageTextVisible(int damageAmount, SPECIAL_DAMAGE sd= SPECIAL_DAMAGE.NONE, CROWD_CONTROL cc=CROWD_CONTROL.NONE)
     {
         GameObject m_damageText = ObjectPoolManager.Instance.PopFromPool("DamageText");
         DamageText damageTextScripte = m_damageText.GetComponent<DamageText>();
         m_damageText.SetActive(true);
 
         if (cc == CROWD_CONTROL.STUN)
-            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]스턴[-]";
+            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[888888]스턴[-]";
         else if (cc == CROWD_CONTROL.STUN_IMMUNE)
-            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]스턴 면역[-]";
+            damageTextScripte.damageAmount = damageAmount.ToString() + "\n[888888]스턴 면역[-]";
         else if (cc == CROWD_CONTROL.BACK_ATTACK)
             damageTextScripte.damageAmount = damageAmount.ToString() + "\n[ff0000]백어택[-]";
         else
             damageTextScripte.damageAmount = damageAmount.ToString();
+
+        if (sd == SPECIAL_DAMAGE.CRITICAL)
+            damageTextScripte.damageAmount = damageAmount.ToString() + "[ff0000]크리티컬[-]";
+        else if (sd == SPECIAL_DAMAGE.BACK_ATTACK)
+            damageTextScripte.damageAmount = damageAmount.ToString() + "[ff00ff]백어택[-]";
+        else if (sd == SPECIAL_DAMAGE.CRITICAL_BACK_ATTACK)
+            damageTextScripte.damageAmount = damageAmount.ToString() + "[ff0000]크리티컬 [ff00ff]백어택[-]";
+
         damageTextScripte.targetTransform = transform.position;
     }
 }

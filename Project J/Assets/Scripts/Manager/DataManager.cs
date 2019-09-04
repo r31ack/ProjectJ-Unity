@@ -104,7 +104,7 @@ public class DataManager : MonoSingleton<DataManager>
             JSONNode nodeData = JSON.Parse(userInfoText.text) as JSONNode;       // 테이블 형태로 파싱
             if (nodeData != null)                                                // 노드 데이터가 존재한다면
             {
-                JSONObject jsonObject = nodeData["CharacterInfo"] as JSONObject;      // 유저 정보를 받음 (유저 정보는 한 라인 밖에 없음)
+                JSONObject jsonObject = nodeData["CharacterInfo"] as JSONObject;      // 유저 정보를 받음
                 m_characterInfo.setDynamicCharacterInfo(jsonObject["userName"], jsonObject["characterType"], jsonObject["level"], jsonObject["exp"], jsonObject["jam"], jsonObject["gold"]);
             }
         }

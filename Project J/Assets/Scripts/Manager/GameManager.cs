@@ -92,7 +92,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_followCam.moveDamping = 4.0f;
         m_ingameUI.gameObject.SetActive(false);             // 인게임 UI비활성화
         m_dialogWindow.SetActive(true);          // 대화창을 활성화
-        m_player.GetComponent<UnityChanOperation>().enabled = false;
+        m_player.GetComponent<PlayerOperation>().enabled = false;
     }
 
     public void endNPCChat()                        // NPC와의 채팅 끝 (바리게이트를 비활성화 )
@@ -108,7 +108,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_followCam.moveDamping = 15.0f;
         m_ingameUI.gameObject.SetActive(true);             // 인게임 UI비활성화
         m_dialogWindow.SetActive(false);          // 대화창을 활성화
-        m_player.GetComponent<UnityChanOperation>().enabled = true;
+        m_player.GetComponent<PlayerOperation>().enabled = true;
     }
 
     public void playerDie()
@@ -119,7 +119,7 @@ public class GameManager : MonoSingleton<GameManager>
     public void revive()
     {
         m_deathWindow.SetActive(false);
-        m_player.GetComponent<UnityChanInfomation>().revive();
+        m_player.GetComponent<PlayerState>().revive();
     }
 
     public void bossCutSceenStart()
@@ -127,7 +127,7 @@ public class GameManager : MonoSingleton<GameManager>
         m_followCam.target = GameObject.Find("Boss").transform.Find("CameraTarget");
         m_followCam.moveDamping = 3.0f;
         m_ingameUI.gameObject.SetActive(false);             // 인게임 UI비활성화
-        m_player.GetComponent<UnityChanOperation>().enabled = false;
+        m_player.GetComponent<PlayerOperation>().enabled = false;
         Invoke("bossCutSceenEnd", 3.0f);
     }
 
@@ -135,7 +135,7 @@ public class GameManager : MonoSingleton<GameManager>
     {
         m_followCam.target = m_player.transform.Find("CameraTarget");
         m_followCam.moveDamping = 15.0f;
-        m_player.GetComponent<UnityChanOperation>().enabled = true;
+        m_player.GetComponent<PlayerOperation>().enabled = true;
         m_ingameUI.gameObject.SetActive(true);             // 인게임 UI비활성화
     }
 
@@ -234,9 +234,9 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void dontDestroyDungeonObject(Vector3 position, Quaternion rotation)      // 던전에서 파괴되지 말아야할 오브젝트 연결
     {
-        if(CharacterInfoManager.instance.m_characterInfo.m_eCharacterType == CHARACTER_TYPE.AKAZA)
+        if(CharacterInfoManager.instance.m_playerInfo.m_eCharacterType == CHARACTER_TYPE.AKAZA)
              m_player = (GameObject)Instantiate(Resources.Load("Prefabs/AkazaBattle"), position, rotation);   // 플레이어를 생성
-        else if (CharacterInfoManager.instance.m_characterInfo.m_eCharacterType == CHARACTER_TYPE.UNITY)
+        else if (CharacterInfoManager.instance.m_playerInfo.m_eCharacterType == CHARACTER_TYPE.UNITY)
             m_player = (GameObject)Instantiate(Resources.Load("Prefabs/UnityChanBattle"), position, rotation);   // 플레이어를 생성
 
         m_player.name = "Player";                                                                        // 플레이어 오브젝트의 이름은 Player

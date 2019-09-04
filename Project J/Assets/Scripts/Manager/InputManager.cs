@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class KeyInfo		// 입력된 키 정보
+public class KeyInfo		   // 입력된 키 정보
 {
     public bool keyDown;       // 키를 누른 상태
     public bool keyPress;      // 키가 눌러지고 있는 상태
-    public bool keyUp;			// 키를 떼는 상태
+    public bool keyUp;		   // 키를 떼는 상태
 };
 
 public class InputManager : MonoSingleton<InputManager>
@@ -29,16 +29,20 @@ public class InputManager : MonoSingleton<InputManager>
         registKey(KeyCode.Keypad6);
     }
 
-    // Update is called once per frame
+    public void registKey(KeyCode keycode)
+    {
+        m_dicRegistKey.Add(keycode, new KeyInfo());
+    }
+
     public void LateUpdate()                // 입력이 끝난 후 입력상태를 갱신하기 위해 LateUpdate사용
     {
         foreach (var value in m_dicRegistKey.Values.ToList())
         {
-            if (value.keyDown == true)
+            if (value.keyDown == true)     // 키 다운 상태이면
             {
-                value.keyDown = false;
-                value.keyPress = true;     // 키 누르는 중인 상태로 전환
-                value.keyUp = false;       
+                value.keyDown = false;     // 다운 상태가 아님
+                value.keyPress = true;     // 누른 상태로 전환
+                value.keyUp = false;       // 키업 상태가 아님
             }
             else if (value.keyUp)          // 키를 뗀 상태이면
             {
@@ -46,7 +50,7 @@ public class InputManager : MonoSingleton<InputManager>
                 value.keyPress = false;    // 누른 상태값 아님
                 value.keyUp = false;       // 키업 상태가 아님
             }
-            else
+            else                           // 키를 누른 상태이면
             {
                 value.keyDown = false;     // 다운 상태값 아님
                 value.keyPress = false;    // 누른 상태값 아님
@@ -54,33 +58,25 @@ public class InputManager : MonoSingleton<InputManager>
             }
         }
     }
-
-    public void registKey(KeyCode keycode)
-    {
-        m_dicRegistKey.Add(keycode, new KeyInfo());
-    }
-
-    public void inputUpKey(KeyCode keycode)
-    {
-        m_dicRegistKey[keycode].keyDown = false;
-        m_dicRegistKey[keycode].keyPress = false;
-        m_dicRegistKey[keycode].keyUp = true;
-    }
-
-    public void inputPressKey(KeyCode keycode)
-    {
-        m_dicRegistKey[keycode].keyDown = false;
-        m_dicRegistKey[keycode].keyPress = true;
-        m_dicRegistKey[keycode].keyUp = false;
-    }
-    public void inputDownKey(KeyCode keycode)
+    public void inputDownKey(KeyCode keycode)   // 키 다운 입력
     {
         m_dicRegistKey[keycode].keyDown = true;
         m_dicRegistKey[keycode].keyPress = false;
         m_dicRegistKey[keycode].keyUp = false;
     }
-
-    public bool keyPressCheck(KeyCode keyCode)
+    public void inputUpKey(KeyCode keycode)     // 키 업 입력
+    {
+        m_dicRegistKey[keycode].keyDown = false;
+        m_dicRegistKey[keycode].keyPress = false;
+        m_dicRegistKey[keycode].keyUp = true;
+    }
+    public void inputPressKey(KeyCode keycode)  // 지속 입력
+    {
+        m_dicRegistKey[keycode].keyDown = false;
+        m_dicRegistKey[keycode].keyPress = true;
+        m_dicRegistKey[keycode].keyUp = false;
+    }
+    public bool keyPressCheck(KeyCode keyCode)  
     {
         return m_dicRegistKey[keyCode].keyPress;
     }

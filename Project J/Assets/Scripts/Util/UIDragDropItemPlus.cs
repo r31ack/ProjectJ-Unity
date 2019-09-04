@@ -90,7 +90,7 @@ public class UIDragDropItemPlus : UIDragDropItem
         if (container.tag == "shopItemSlot")    // 콘테이너가 상점 아이템슬롯이면
         {
             int saleGoldCount = GameObject.Find("ItemWindow").GetComponent<ItemManager>().getBuyGold(mTrans.GetComponent<UIButton>().normalSprite);   // 아이템 구매 가격을 받아와 플레이어 골드 상승
-            CharacterInfoManager.instance.m_characterInfo.m_iGold += saleGoldCount;                                                             // 캐릭터 정보에 골드량을 증가시킨다.
+            CharacterInfoManager.instance.m_playerInfo.m_iGold += saleGoldCount;                                                             // 캐릭터 정보에 골드량을 증가시킨다.
             GameObject.Find("ProfileUI").GetComponent<ProfileUIManager>().changeGold();                                                               // UI에 골드량을 바꾼다.
             Destroy(mTrans.gameObject);                                                                                                               // 아이템 삭제
         }

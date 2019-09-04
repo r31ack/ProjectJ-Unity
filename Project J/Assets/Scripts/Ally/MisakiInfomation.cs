@@ -127,9 +127,8 @@ public class MisakiInfomation : Player
             case ALLY_STATE.PATROL:         // 탐색
                 patrol();
                 break;
-            case ALLY_STATE.FOLLOW:       // 플레이어를 쫓음
+            case ALLY_STATE.FOLLOW:         // 플레이어를 쫓음
                 followPlayer();
-                //rayCastForwardLine();
                 break;
             case ALLY_STATE.BASE_ATTACK:
                 if (m_enemyTransform != null && m_fAttackTimer > 0.0f)
