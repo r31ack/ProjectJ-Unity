@@ -53,7 +53,7 @@ public class AkazaOperation : PlayerOperation   // Akaza 조작 스크립트
         {
             if ((Input.GetKey(KeyCode.Keypad3)==true) || (InputManager.instance.keyPressCheck(KeyCode.Keypad3)==true))
             {
-                if (Input.GetKey(KeyCode.W))
+                if (Input.GetKey(KeyCode.W) || (InputManager.instance.keyPressCheck(KeyCode.W) == true))
                 {
                     m_animator.SetBool("rush", true);
                     m_animator.SetInteger("stateLevel", 4);
@@ -62,7 +62,7 @@ public class AkazaOperation : PlayerOperation   // Akaza 조작 스크립트
                     SkillUIManager.instance.setSkillType(5, SKILL_TYPE.RAMPAGE);
                     SkillUIManager.instance.setSkillType(6, SKILL_TYPE.FLASH);
                 }
-                else if (Input.GetKey(KeyCode.S))
+                else if (Input.GetKey(KeyCode.S) || (InputManager.instance.keyPressCheck(KeyCode.S) == true))
                 {
                     m_animator.SetBool("rush", true);
                     m_animator.SetInteger("stateLevel", 4);
@@ -77,7 +77,7 @@ public class AkazaOperation : PlayerOperation   // Akaza 조작 스크립트
     {
         if (CharacterInfoManager.instance.coolTimeCheck((int)SKILL_TYPE.FLASH) == false) // 쿨타임이 존재하지 않을 시
         {
-            if (Input.GetKeyDown(KeyCode.Keypad6) == true || InputManager.instance.keyDownCheck(KeyCode.Keypad6) == true)
+            if (Input.GetKeyDown(KeyCode.Keypad6) == true || InputManager.instance.keyPressCheck(KeyCode.Keypad6) == true)
             {
                 m_animator.SetBool("flash", true);
                 m_animator.SetInteger("stateLevel", 3);
@@ -138,14 +138,14 @@ public class AkazaOperation : PlayerOperation   // Akaza 조작 스크립트
     {
         float moveVelocity = m_animator.GetFloat("moveVelocity");  // 애니메이터로부터 현재 이동속도를 받아옴
 
-        if (Input.GetKey(KeyCode.W))        // 앞방향 이동
+        if (Input.GetKey(KeyCode.W) || InputManager.instance.keyPressCheck(KeyCode.W))        // 앞방향 이동
         {
             if (moveVelocity < 10)         // 속도가 10보다 작다면
                 moveVelocity += 30.0f * Time.deltaTime;         // 속도를 1 더함
             else if (moveVelocity > 11)    // 속도가 11보다 크면 내림
                 moveVelocity -= 30.0f * Time.deltaTime;
         }
-        else if (Input.GetKey(KeyCode.S))   // 뒷걸음
+        else if (Input.GetKey(KeyCode.S) || InputManager.instance.keyPressCheck(KeyCode.S))   // 뒷걸음
         {
             if (moveVelocity > -10)        // 뒤로가는 속도가 20보다 작다면
                 moveVelocity -= 30.0f * Time.deltaTime;      // 뒤로가는 속도를 1 더함

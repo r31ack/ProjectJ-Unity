@@ -35,12 +35,11 @@ public class LoadManager : MonoBehaviour
 
     private void Update()
     {
-        percentBar.barSize += 0.05f;
+        percentBar.barSize = loadState.progress;
 
-        if (loadState.progress >= 0.9f && percentBar.barSize >= 1.0f)
+        if (loadState.progress >= 0.9f)
         {
-            if (Input.GetMouseButtonDown(0))
-              loadState.allowSceneActivation = true;
+           loadState.allowSceneActivation = true;
         }
     }
 }

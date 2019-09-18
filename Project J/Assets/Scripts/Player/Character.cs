@@ -48,9 +48,14 @@ public class Player : Character
 {
 }
 
+public class Ally : Character
+{
+   
+}
+
 public class Enemy : Character
 {
-    protected int m_iGetExp;                   // 얻는 경험치
+    protected int m_iGetExp;                     // 얻는 경험치
 
     protected Transform m_targetTransform;       // 타겟의 트랜스폼 
     protected float m_fTargetDistance = 0.0f;    // 자신과 타겟과의 거리차

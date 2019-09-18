@@ -103,8 +103,45 @@ public class InGameUIManager : Singleton<InGameUIManager>
         else
             m_vec2KnobNormalPos.x = 0.0f;
 
-        if (Input.GetMouseButton(0) == true)
+        if (Input.GetMouseButton(0) == true || Input.touchCount > 0)        // 터치가 1개 이상
         {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch tempTouchs = Input.GetTouch(i);
+                if (tempTouchs.phase == TouchPhase.Began)  //해당 터치가 시작됐다면.
+                {
+                    Vector3 touchPos = tempTouchs.position;
+                    if (touchPos.x < 280 && touchPos.x >= 0 && touchPos.y < 280 && touchPos.y >= 0) // 마우스 위치가 조이스틱안에 들어왓으면
+                    {
+                        Vector3 dirVector = new Vector3(120, 120, 0) - touchPos;
+                        dirVector.Normalize();
+                        m_vec2KnobNormalPos.x = dirVector.x;
+                        m_vec2KnobNormalPos.y = dirVector.y;
+                        m_fKnobAngle = Quaternion.FromToRotation(Vector3.up, m_vec2KnobNormalPos - Vector2.zero).eulerAngles.z; // 두 벡터 사이의 각도 (0~360도)
+
+                        if (touchPos.x < 280 && touchPos.x >= 0 && touchPos.y < 280 && touchPos.y >= 0) // 마우스 위치가 조이스틱안에 들어왓으면)
+                        {
+                            if (m_fKnobAngle >= 270 || m_fKnobAngle < 90)      // -45~45도는 뒤로
+                            {
+                                InputManager.instance.inputPressKey(KeyCode.S);
+                            }
+                            else if (m_fKnobAngle >= 90 && m_fKnobAngle < 270)      // 45~135도는 위
+                            {
+                                InputManager.instance.inputPressKey(KeyCode.W);
+                            }
+                            if (m_fKnobAngle >= 45 && m_fKnobAngle < 135)      // 45~135도는 오른쪽
+                            {
+                                InputManager.instance.inputPressKey(KeyCode.D);
+                            }
+                            else if (m_fKnobAngle >= 225 && m_fKnobAngle < 315)      // 45~135도는 왼쪽
+                            {
+                                InputManager.instance.inputPressKey(KeyCode.A);
+                            }
+                        }
+                    }
+                }
+            }
+
             Vector3 mousePos = Input.mousePosition;                                         // 마우스 포지션을 받음
             if (mousePos.x < 280 && mousePos.x >= 0 && mousePos.y < 280 && mousePos.y >= 0) // 마우스 위치가 조이스틱안에 들어왓으면
             {

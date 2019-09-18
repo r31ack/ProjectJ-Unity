@@ -180,7 +180,7 @@ public class PlayerOperation : Player   // 유니티짱 조작 스크립트
     {
         if (Input.GetKey(KeyCode.Keypad3) || InputManager.instance.keyPressCheck(KeyCode.Keypad3) == true)        // 좌우 회전
         {
-            if (Input.GetKey(KeyCode.A))
+            if (Input.GetKey(KeyCode.A) || InputManager.instance.keyPressCheck(KeyCode.A) == true)
             {
                 m_animator.SetInteger("direction", 1);
                 m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
@@ -189,7 +189,7 @@ public class PlayerOperation : Player   // 유니티짱 조작 스크립트
                 SkillUIManager.instance.setSkillType(5, SKILL_TYPE.RAMPAGE);
             }
 
-            else if (Input.GetKey(KeyCode.D))
+            else if (Input.GetKey(KeyCode.D) || InputManager.instance.keyPressCheck(KeyCode.D) == true)
             {
                 m_animator.SetInteger("direction", 3);
                 m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
@@ -198,17 +198,17 @@ public class PlayerOperation : Player   // 유니티짱 조작 스크립트
                 SkillUIManager.instance.setSkillType(5, SKILL_TYPE.RAMPAGE);
             }
 
-            if (Input.GetKey(KeyCode.W))
-            {
-                m_animator.SetInteger("direction", 2);
-                m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
-            }
+            //if (Input.GetKey(KeyCode.W) || InputManager.instance.keyPressCheck(KeyCode.W) == true)
+            //{
+            //    m_animator.SetInteger("direction", 2);
+            //    m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
+            //}
 
-            else if (Input.GetKey(KeyCode.S))
-            {
-                m_animator.SetInteger("direction", 4);
-                m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
-            }
+            //else if (Input.GetKey(KeyCode.S) || InputManager.instance.keyPressCheck(KeyCode.S) == true)
+            //{
+            //    m_animator.SetInteger("direction", 4);
+            //    m_animator.SetInteger("stateLevel", 4);        // 상태 레벨 4로 세팅 
+            //}
         }
     }
 
@@ -216,19 +216,19 @@ public class PlayerOperation : Player   // 유니티짱 조작 스크립트
     {
         if (Input.GetKey(KeyCode.LeftShift) || InputManager.instance.keyPressCheck(KeyCode.Keypad2) == true)
         {
-            if (Input.GetKey(KeyCode.A))
+            if (Input.GetKey(KeyCode.A) || InputManager.instance.keyPressCheck(KeyCode.A) == true)
             {
                 m_animator.SetFloat("roll", 1);
             }
-            else if (Input.GetKey(KeyCode.W))
+            else if (Input.GetKey(KeyCode.W) || InputManager.instance.keyPressCheck(KeyCode.W) == true)
             {
                 m_animator.SetFloat("roll", 2);
             }
-            else if (Input.GetKey(KeyCode.D))
+            else if (Input.GetKey(KeyCode.D) || InputManager.instance.keyPressCheck(KeyCode.D) == true)
             {
                 m_animator.SetFloat("roll", 3);
             }
-            else if (Input.GetKey(KeyCode.S))
+            else if (Input.GetKey(KeyCode.S) || InputManager.instance.keyPressCheck(KeyCode.S) == true)
             {
                 m_animator.SetFloat("roll", 4);
             }

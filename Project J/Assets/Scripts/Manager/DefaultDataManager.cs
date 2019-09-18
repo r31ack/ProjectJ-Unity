@@ -164,8 +164,8 @@ public class DefaultDataManager : MonoSingleton<DefaultDataManager> // 다시 �
             TextAsset textAsset = new TextAsset();
             if (characterType == CHARACTER_TYPE.AKAZA)
                 textAsset = Resources.Load<TextAsset>("Data/AkazaSkillInfo");      // 리소스 로드를 통해 테이블을 로드한다.
-            if (characterType == CHARACTER_TYPE.UNITY)
-                textAsset = Resources.Load<TextAsset>("Data/UnityChanSkillInfo");  // 리소스 로드를 통해 테이블을 로드한다.
+            //if (characterType == CHARACTER_TYPE.UNITY)
+            //    textAsset = Resources.Load<TextAsset>("Data/UnityChanSkillInfo");  // 리소스 로드를 통해 테이블을 로드한다.
             string content = textAsset.text;                                       // 한라인으로 데이터가 나열되어 있다.
 
             string[] line = content.Split('\n');                              // string을 '\n' 기준으로 분리해서 line배열에 넣는다.
